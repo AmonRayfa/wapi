@@ -1,0 +1,45 @@
+# Build
+bin
+build
+dist
+dist-ssr
+lib
+lib-types
+server
+
+# Cache
+.cache
+.mf
+.rollup.cache
+tsconfig.tsbuildinfo
+
+# Development
+*.local
+.env
+node_modules
+target
+tmp
+
+# Editors
+*.njsproj
+*.ntvs*
+*.sln
+*.suo
+*.sw?
+.DS_Store
+.idea
+.vscode
+.zed
+
+# Logs
+*.log
+logs
+lerna-debug.log*
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Yarn
+.yarn/*
+!.yarn/releases

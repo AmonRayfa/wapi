@@ -1,0 +1,42 @@
+[package]
+name = "wapi"
+version = "0.1.0"
+edition = "2021"
+authors = ["Amon Rayfa <amon.rayfa@proton.me>"]
+description = "A cross-platform DDNS client that automatically updates your DNS records when your IP address changes."
+keywords = ["cross-platform", "client", "ddns", "ip", "records"]
+categories = ["command-line-utilities"]
+homepage = "https://github.com/AmonRayfa/wapi"
+repository = "https://github.com/AmonRayfa/wapi"
+license = "Apache-2.0"
+readme = "README.md"
+exclude = [
+  ".github/**",
+  ".trunk/**",
+  "node_modules/**",
+  "target/**",
+  ".gitignore",
+  "package.json",
+  "pnpm-lock.yaml",
+]
+publish = false
+
+[profile]
+dev = { opt-level = 0 }
+release = { opt-level = 3 }
+
+[lib]
+name = "wapi"
+path = "src/lib.rs"
+
+[[bin]]
+name = "wapi"
+path = "src/main.rs"
+
+[dependencies]
+chrono = "0.4"
+directories = "5"
+mabe = { version = "1", features = ["colorize"] }
+reqwest = { version = "0.12", features = ["blocking"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

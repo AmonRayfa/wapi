@@ -1,0 +1,30 @@
+{
+	"name": "wapi",
+	"version": "0.1.0",
+	"type": "module",
+	"authors": [
+		"Amon Rayfa <amon.rayfa@proton.me>"
+	],
+	"description": "A cross-platform DDNS client that automatically updates your DNS records when your IP address changes.",
+	"keywords": [
+		"cross-platform",
+		"client",
+		"ddns",
+		"ip",
+		"records"
+	],
+	"funding": "https://www.patreon.com/AmonRayfa",
+	"homepage": "https://github.com/AmonRayfa/wapi",
+	"repository": "github:AmonRayfa/wapi",
+	"license": "Apache-2.0",
+	"files": [],
+	"scripts": {
+		"trunk": "trunk",
+		"lint": "trunk check",
+		"fmt": "trunk fmt"
+	},
+	"devDependencies": {
+		"@trunkio/launcher": "^1.3.4"
+	},
+	"private": true
+}
