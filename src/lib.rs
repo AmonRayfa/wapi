@@ -21,6 +21,7 @@
 
 mod api;
 mod error;
+pub use api::cache::Cache;
 
 #[cfg(debug_assertions)]
 mod utils;
