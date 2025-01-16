@@ -57,7 +57,7 @@ impl Cache {
     }
 
     // Formats the cache file.
-    fn fmt(&mut self) -> () {
+    fn fmt(&mut self) {
         // Ensures the metadata is correct.
         self.metadata.warning = String::from("THIS FILE IS AUTO-GENERATED. DO NOT EDIT MANUALLY. IF THE FILE IS TAMPERED WITH, IT WILL BE OVERWRITTEN WITH DEFAULT DATA, AND ALL PREVIOUS DATA WILL BE LOST.");
         self.metadata.name = String::from("wapi-cache");
@@ -84,132 +84,24 @@ impl Cache {
             .iter()
             .rev()
             .filter(|credentials| match credentials.provider.as_str() {
-                "alibabacloud" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "alibabacloud").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "bluehost" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "bluehost").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "cloudflare" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "cloudflare").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "dnspod" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "dnspod").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "dreamhost" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "dreamhost").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "dynadot" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "dynadot").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "enom" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "enom").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "epik" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "epik").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "gandi" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "gandi").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "godaddy" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "godaddy").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "hover" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "hover").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "ionos" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "ionos").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "namecheap" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "namecheap").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "namesilo" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "namesilo").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "porkbun" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "porkbun").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "resellerclub" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "resellerclub").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "opensrs" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "opensrs").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
-                "ovh" => {
-                    if self.data.dns_credentials.iter().filter(|c| c.provider == "ovh").count() > 1 {
-                        false
-                    } else {
-                        true
-                    }
-                }
+                "alibabacloud" => self.data.dns_credentials.iter().filter(|c| c.provider == "alibabacloud").count() > 1,
+                "bluehost" => self.data.dns_credentials.iter().filter(|c| c.provider == "bluehost").count() > 1,
+                "cloudflare" => self.data.dns_credentials.iter().filter(|c| c.provider == "cloudflare").count() > 1,
+                "dnspod" => self.data.dns_credentials.iter().filter(|c| c.provider == "dnspod").count() > 1,
+                "dreamhost" => self.data.dns_credentials.iter().filter(|c| c.provider == "dreamhost").count() > 1,
+                "dynadot" => self.data.dns_credentials.iter().filter(|c| c.provider == "dynadot").count() > 1,
+                "enom" => self.data.dns_credentials.iter().filter(|c| c.provider == "enom").count() > 1,
+                "epik" => self.data.dns_credentials.iter().filter(|c| c.provider == "epik").count() > 1,
+                "gandi" => self.data.dns_credentials.iter().filter(|c| c.provider == "gandi").count() > 1,
+                "godaddy" => self.data.dns_credentials.iter().filter(|c| c.provider == "godaddy").count() > 1,
+                "hover" => self.data.dns_credentials.iter().filter(|c| c.provider == "hover").count() > 1,
+                "ionos" => self.data.dns_credentials.iter().filter(|c| c.provider == "ionos").count() > 1,
+                "namecheap" => self.data.dns_credentials.iter().filter(|c| c.provider == "namecheap").count() > 1,
+                "namesilo" => self.data.dns_credentials.iter().filter(|c| c.provider == "namesilo").count() > 1,
+                "porkbun" => self.data.dns_credentials.iter().filter(|c| c.provider == "porkbun").count() > 1,
+                "resellerclub" => self.data.dns_credentials.iter().filter(|c| c.provider == "resellerclub").count() > 1,
+                "opensrs" => self.data.dns_credentials.iter().filter(|c| c.provider == "opensrs").count() > 1,
+                "ovh" => self.data.dns_credentials.iter().filter(|c| c.provider == "ovh").count() > 1,
                 _ => false,
             })
             .cloned()
