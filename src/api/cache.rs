@@ -3,9 +3,14 @@
 
 //! This module contains the struct and methods used to manipulate the program's cache file.
 
+use crate::error::api::{Error, Result};
 use chrono::Local;
+use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::Write;
 use std::net::{Ipv4Addr, Ipv6Addr};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Metadata {
@@ -41,7 +46,7 @@ pub struct Cache {
 }
 
 impl Cache {
-    // Creates a new cache instance with empty values.
+    /// Creates a new cache instance with empty values.
     fn new() -> Cache {
         Cache {
             metadata: Metadata {
@@ -56,7 +61,7 @@ impl Cache {
         }
     }
 
-    // Formats the cache file.
+    /// Formats the cache file.
     fn fmt(&mut self) {
         // Ensures the metadata is correct.
         self.metadata.warning = String::from("THIS FILE IS AUTO-GENERATED. DO NOT EDIT MANUALLY. IF THE FILE IS TAMPERED WITH, IT WILL BE OVERWRITTEN WITH DEFAULT DATA, AND ALL PREVIOUS DATA WILL BE LOST.");
@@ -106,5 +111,34 @@ impl Cache {
             })
             .cloned()
             .collect();
+    }
+
+    /// Retrieves the cache file's location. If the cache file cannot be located, an error is returned, and if the cache file
+    /// does not exist, a new empty ache file is created.
+    pub fn locate() -> Result<PathBuf> {
+        // Retrieves the cache file location.
+        let cache_location = match BaseDirs::new() {
+            Some(base_dirs) => base_dirs.home_dir().join(Path::new("wapi")).join(Path::new("cache.json")),
+            None => {
+                return Err(Error::Cache(
+                    String::from("locate"),
+                    String::from("No valid user home directory path could be retrieved from the operating system."),
+                ))
+            }
+        };
+
+        // Ensures that the `wapi/` directory and its parent directories exist, and create them if they don't.
+        if let Some(parent_dir) = cache_location.parent() {
+            std::fs::create_dir_all(parent_dir).map_err(|err| Error::Cache(String::from("locate"), err.to_string()))?;
+        }
+
+        // Creates a new empty cache file if it doesn't exist.
+        if !cache_location.exists() {
+            let mut file =
+                File::create(&cache_location).map_err(|err| Error::Cache(String::from("locate"), err.to_string()))?;
+            file.write_all(b"{}").map_err(|err| Error::Cache(String::from("locate"), err.to_string()))?;
+        }
+
+        Ok(cache_location)
     }
 }
