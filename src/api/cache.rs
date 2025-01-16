@@ -141,4 +141,33 @@ impl Cache {
 
         Ok(cache_location)
     }
+
+    /// Loads the cache file (the location depends on the operating system), formats it, and returns it as a cache instance. If
+    /// the cache file does not exist, or is corrupted and cannot be formatted, a new cache instance is created with default
+    /// values. The cache file is formatted by ensuring that the metadata is correct, the IP addresses are valid, and the DNS
+    /// credentials are in the correct format. If the IP addresses are not valid, they are replaced with default values
+    /// (`0.0.0.0` and `0:0:0:0:0:0:0:0` for IPv4 and IPv6 respectively). If the provider of a DNS credential is not recognized,
+    /// the credential is removed from the cache. And if the provider of DNS credential appears more than once, only the most
+    /// recent one is kept. For a list of supported providers and their formatted names, see the [GitHub
+    /// repository](https://github.com/AmonRayfa/wapi).
+    pub fn load() -> Result<Cache> {
+        // Retrieves the cache file location.
+        let cache_location = Cache::locate()?;
+
+        // Reads the cache file and returns an error if it fails.
+        let cache_file =
+            std::fs::read_to_string(&cache_location).map_err(|err| Error::Cache(String::from("load"), err.to_string()))?;
+
+        // Deserializes the cache file and returns a new cache instance if it fails.
+        let mut cache = match serde_json::from_str(&cache_file) {
+            Ok(cache) => cache,
+            Err(_) => Cache::new(),
+        };
+
+        // Formats the cache file.
+        cache.fmt();
+
+        // Returns the loaded cache instance.
+        Ok(cache)
+    }
 }
