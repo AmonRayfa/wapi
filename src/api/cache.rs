@@ -170,4 +170,19 @@ impl Cache {
         // Returns the loaded cache instance.
         Ok(cache)
     }
+
+    /// Saves the cache instance to `wapi/cache.json` in the user's home directory (the location depends on the operating
+    /// system). An error is returned if the cache file's location cannot be retrieved. The cache file is saved as a JSON file,
+    /// and an error is returned if the serialization fails. If a cache file already exists, it is overwritten with the new
+    /// cache instance.
+    pub fn save(&mut self) -> Result<()> {
+        // Retrieves the cache file location.
+        let cache_location = Cache::locate()?;
+
+        // Saves the cache file and returns an error if it fails.
+        let cache = serde_json::to_string(self).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
+        std::fs::write(cache_location, cache).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
+
+        Ok(())
+    }
 }
