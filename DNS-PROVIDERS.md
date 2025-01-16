@@ -32,12 +32,12 @@ For information on how to use the project, please refer to the [README](README.m
 |             [IONOS](https://www.ionos.com)             |    ionos     |       ⏳       |
 |         [Namecheap](https://www.namecheap.com)         |  namecheap   |       ⏳       |
 |          [NameSilo](https://www.namesilo.com)          |   namesilo   |       ⏳       |
+|             [OpenSRS](https://opensrs.com)             |   opensrs    |       ⏳       |
+|            [OVH](https://www.ovhcloud.com)             |     ovh      |       ⏳       |
 |             [Porkbun](https://porkbun.com)             |   porkbun    |       ✅       |
 |        [Register.com](https://www.register.com)        |   register   |       ❌       |
 |      [ResellerClub](https://www.resellerclub.com)      | resellerclub |       ⏳       |
 | [Squarespace Domains](https://domains.squarespace.com) | squarespace  |       ❌       |
-|             [OpenSRS](https://opensrs.com)             |   opensrs    |       ⏳       |
-|            [OVH](https://www.ovhcloud.com)             |     ovh      |       ⏳       |
 
 ## License
 

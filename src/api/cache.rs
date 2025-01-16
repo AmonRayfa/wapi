@@ -98,10 +98,10 @@ impl Cache {
                 "ionos" => self.data.dns_credentials.iter().filter(|c| c.provider == "ionos").count() > 1,
                 "namecheap" => self.data.dns_credentials.iter().filter(|c| c.provider == "namecheap").count() > 1,
                 "namesilo" => self.data.dns_credentials.iter().filter(|c| c.provider == "namesilo").count() > 1,
-                "porkbun" => self.data.dns_credentials.iter().filter(|c| c.provider == "porkbun").count() > 1,
-                "resellerclub" => self.data.dns_credentials.iter().filter(|c| c.provider == "resellerclub").count() > 1,
                 "opensrs" => self.data.dns_credentials.iter().filter(|c| c.provider == "opensrs").count() > 1,
                 "ovh" => self.data.dns_credentials.iter().filter(|c| c.provider == "ovh").count() > 1,
+                "porkbun" => self.data.dns_credentials.iter().filter(|c| c.provider == "porkbun").count() > 1,
+                "resellerclub" => self.data.dns_credentials.iter().filter(|c| c.provider == "resellerclub").count() > 1,
                 _ => false,
             })
             .cloned()
