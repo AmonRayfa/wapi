@@ -21,8 +21,8 @@ struct Metadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct DNSCredential {
-    provider: String,
+struct DNSProvider {
+    id: String,
     api_key: String,
     secret_api_key: String,
 }
@@ -31,7 +31,7 @@ struct DNSCredential {
 struct Data {
     ipv4_address: String,
     ipv6_address: String,
-    dns_credentials: Vec<DNSCredential>,
+    dns_providers: Vec<DNSProvider>,
 }
 
 /// The struct used to manipulate the program's cache file.
@@ -55,7 +55,7 @@ impl Cache {
                 homepage: String::new(),
                 timestamp: String::new(),
             },
-            data: Data { ipv4_address: String::new(), ipv6_address: String::new(), dns_credentials: Vec::new() },
+            data: Data { ipv4_address: String::new(), ipv6_address: String::new(), dns_providers: Vec::new() },
         };
 
         cache.fmt();
@@ -65,10 +65,9 @@ impl Cache {
     /// Formats and timestamps the [`Cache`](wapi::Cache) instance (this method will be called after each change made to cache's
     /// content). The is done by ensuring that the metadata is correct, the IP addresses are valid, and the DNS providers are in
     /// the correct format. If the IP addresses are not valid, they are replaced with default values (`0.0.0.0` and
-    /// `0:0:0:0:0:0:0:0` for IPv4 and IPv6 respectively). If the name of a DNS provider is not recognized, the DNS provider is
-    /// removed from the cache. And if the name of a DNS provider appears more than once, only the most recent one is kept. For
-    /// a list of the supported DNS providers and their formatted names, see the [GitHub
-    /// repository](https://github.com/AmonRayfa/wapi).
+    /// `0:0:0:0:0:0:0:0` for IPv4 and IPv6 respectively). If the ID of a DNS provider is not recognized, the DNS provider is
+    /// removed from the cache. And if the ID of a DNS provider appears more than once, only the most recent one is kept. For a
+    /// list of the supported DNS providers and their ID, see the [GitHub repository](https://github.com/AmonRayfa/wapi).
     pub fn fmt(&mut self) {
         // Ensures the metadata is correct.
         self.metadata.warning = String::from("THIS FILE IS AUTO-GENERATED. DO NOT EDIT MANUALLY. IF THE FILE IS TAMPERED WITH, IT WILL BE OVERWRITTEN WITH DEFAULT DATA, AND ALL PREVIOUS DATA WILL BE LOST.");
@@ -89,30 +88,30 @@ impl Cache {
             Err(_) => self.data.ipv6_address = String::from("0:0:0:0:0:0:0:0"),
         }
 
-        self.data.dns_credentials = self
+        self.data.dns_providers = self
             .data
-            .dns_credentials
+            .dns_providers
             .iter()
             .rev()
-            .filter(|credentials| match credentials.provider.as_str() {
-                "alibabacloud" => self.data.dns_credentials.iter().filter(|c| c.provider == "alibabacloud").count() > 1,
-                "bluehost" => self.data.dns_credentials.iter().filter(|c| c.provider == "bluehost").count() > 1,
-                "cloudflare" => self.data.dns_credentials.iter().filter(|c| c.provider == "cloudflare").count() > 1,
-                "dnspod" => self.data.dns_credentials.iter().filter(|c| c.provider == "dnspod").count() > 1,
-                "dreamhost" => self.data.dns_credentials.iter().filter(|c| c.provider == "dreamhost").count() > 1,
-                "dynadot" => self.data.dns_credentials.iter().filter(|c| c.provider == "dynadot").count() > 1,
-                "enom" => self.data.dns_credentials.iter().filter(|c| c.provider == "enom").count() > 1,
-                "epik" => self.data.dns_credentials.iter().filter(|c| c.provider == "epik").count() > 1,
-                "gandi" => self.data.dns_credentials.iter().filter(|c| c.provider == "gandi").count() > 1,
-                "godaddy" => self.data.dns_credentials.iter().filter(|c| c.provider == "godaddy").count() > 1,
-                "hover" => self.data.dns_credentials.iter().filter(|c| c.provider == "hover").count() > 1,
-                "ionos" => self.data.dns_credentials.iter().filter(|c| c.provider == "ionos").count() > 1,
-                "namecheap" => self.data.dns_credentials.iter().filter(|c| c.provider == "namecheap").count() > 1,
-                "namesilo" => self.data.dns_credentials.iter().filter(|c| c.provider == "namesilo").count() > 1,
-                "opensrs" => self.data.dns_credentials.iter().filter(|c| c.provider == "opensrs").count() > 1,
-                "ovh" => self.data.dns_credentials.iter().filter(|c| c.provider == "ovh").count() > 1,
-                "porkbun" => self.data.dns_credentials.iter().filter(|c| c.provider == "porkbun").count() > 1,
-                "resellerclub" => self.data.dns_credentials.iter().filter(|c| c.provider == "resellerclub").count() > 1,
+            .filter(|providers| match providers.id.as_str() {
+                "alibabacloud" => self.data.dns_providers.iter().filter(|c| c.id == "alibabacloud").count() > 1,
+                "bluehost" => self.data.dns_providers.iter().filter(|c| c.id == "bluehost").count() > 1,
+                "cloudflare" => self.data.dns_providers.iter().filter(|c| c.id == "cloudflare").count() > 1,
+                "dnspod" => self.data.dns_providers.iter().filter(|c| c.id == "dnspod").count() > 1,
+                "dreamhost" => self.data.dns_providers.iter().filter(|c| c.id == "dreamhost").count() > 1,
+                "dynadot" => self.data.dns_providers.iter().filter(|c| c.id == "dynadot").count() > 1,
+                "enom" => self.data.dns_providers.iter().filter(|c| c.id == "enom").count() > 1,
+                "epik" => self.data.dns_providers.iter().filter(|c| c.id == "epik").count() > 1,
+                "gandi" => self.data.dns_providers.iter().filter(|c| c.id == "gandi").count() > 1,
+                "godaddy" => self.data.dns_providers.iter().filter(|c| c.id == "godaddy").count() > 1,
+                "hover" => self.data.dns_providers.iter().filter(|c| c.id == "hover").count() > 1,
+                "ionos" => self.data.dns_providers.iter().filter(|c| c.id == "ionos").count() > 1,
+                "namecheap" => self.data.dns_providers.iter().filter(|c| c.id == "namecheap").count() > 1,
+                "namesilo" => self.data.dns_providers.iter().filter(|c| c.id == "namesilo").count() > 1,
+                "opensrs" => self.data.dns_providers.iter().filter(|c| c.id == "opensrs").count() > 1,
+                "ovh" => self.data.dns_providers.iter().filter(|c| c.id == "ovh").count() > 1,
+                "porkbun" => self.data.dns_providers.iter().filter(|c| c.id == "porkbun").count() > 1,
+                "resellerclub" => self.data.dns_providers.iter().filter(|c| c.id == "resellerclub").count() > 1,
                 _ => false,
             })
             .cloned()
