@@ -1,7 +1,7 @@
 // Copyright 2025 Amon Rayfa.
 // SPDX-License-Identifier: Apache-2.0.
 
-//! This module contains the struct and methods used to manipulate the program's cache file.
+//! This module contains the struct and methods used to manipulate the program's cache.
 
 use crate::error::api::{Error, Result};
 use chrono::Local;
@@ -44,9 +44,9 @@ pub struct Cache {
 }
 
 impl Cache {
-    /// Creates a new cache instance with empty values.
-    fn new() -> Cache {
-        Cache {
+    /// Creates a new cache instance with default values.
+    pub fn new() -> Cache {
+        let mut cache = Cache {
             metadata: Metadata {
                 warning: String::new(),
                 name: String::new(),
@@ -56,18 +56,26 @@ impl Cache {
                 timestamp: String::new(),
             },
             data: Data { ipv4_address: String::new(), ipv6_address: String::new(), dns_credentials: Vec::new() },
-        }
+        };
+
+        cache.fmt();
+        cache
     }
 
-    /// Formats the cache file.
-    fn fmt(&mut self) {
+    /// Formats and timestamps the [`Cache`](wapi::Cache) instance (this method will be called after each change made to cache's
+    /// content). The is done by ensuring that the metadata is correct, the IP addresses are valid, and the DNS providers are in
+    /// the correct format. If the IP addresses are not valid, they are replaced with default values (`0.0.0.0` and
+    /// `0:0:0:0:0:0:0:0` for IPv4 and IPv6 respectively). If the name of a DNS provider is not recognized, the DNS provider is
+    /// removed from the cache. And if the name of a DNS provider appears more than once, only the most recent one is kept. For
+    /// a list of the supported DNS providers and their formatted names, see the [GitHub
+    /// repository](https://github.com/AmonRayfa/wapi).
+    pub fn fmt(&mut self) {
         // Ensures the metadata is correct.
         self.metadata.warning = String::from("THIS FILE IS AUTO-GENERATED. DO NOT EDIT MANUALLY. IF THE FILE IS TAMPERED WITH, IT WILL BE OVERWRITTEN WITH DEFAULT DATA, AND ALL PREVIOUS DATA WILL BE LOST.");
         self.metadata.name = String::from("wapi-cache");
         self.metadata.version = env!("CARGO_PKG_VERSION").to_string();
         self.metadata.description = String::from("The cache file for the Wapi client.");
         self.metadata.homepage = String::from("https://github.com/AmonRayfa/wapi");
-        self.metadata.timestamp = Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string();
 
         // Ensures the IPv4 address is valid and replaces it with a default value if it is not.
         match self.data.ipv4_address.parse::<Ipv4Addr>() {
@@ -109,6 +117,9 @@ impl Cache {
             })
             .cloned()
             .collect();
+
+        // Timestamps the cache.
+        self.metadata.timestamp = Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string();
     }
 
     /// Retrieves the cache file's path. A `None` value is returned if the user's home directory path cannot be retrieved from
