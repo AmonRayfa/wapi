@@ -7,8 +7,6 @@ use crate::error::api::{Error, Result};
 use chrono::Local;
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::Write;
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::path::{Path, PathBuf};
 
@@ -113,12 +111,22 @@ impl Cache {
             .collect();
     }
 
-    /// Retrieves the cache file's location. If the cache file cannot be located, an error is returned, and if the cache file
-    /// does not exist, a new empty ache file is created.
-    pub fn locate() -> Result<PathBuf> {
-        // Retrieves the cache file location.
-        let cache_location = match BaseDirs::new() {
-            Some(base_dirs) => base_dirs.home_dir().join(Path::new("wapi")).join(Path::new("cache.json")),
+    /// Retrieves the cache file's path. A `None` value is returned if the user's home directory path cannot be retrieved from
+    /// the operating system.
+    pub fn get_path() -> Option<PathBuf> {
+        match BaseDirs::new() {
+            Some(base_dirs) => Some(base_dirs.home_dir().join(Path::new("wapi")).join(Path::new("cache.json"))),
+            None => None,
+        }
+    }
+
+    /// Loads the cache file (the location depends on the operating system), and returns it as a [`Cache`](wapi::Cache)
+    /// instance. An error is returned if the cache file: does not exist, cannot be read to a string, or is corrupted and cannot
+    /// be deserialized.
+    pub fn load() -> Result<Cache> {
+        // Retrieves the cache file's path and returns an error if it fails.
+        let cache_path = match Cache::get_path() {
+            Some(p) => p,
             None => {
                 return Err(Error::Cache(
                     String::from("locate"),
@@ -127,61 +135,47 @@ impl Cache {
             }
         };
 
-        // Ensures that the `wapi/` directory and its parent directories exist, and create them if they don't.
-        if let Some(parent_dir) = cache_location.parent() {
-            std::fs::create_dir_all(parent_dir).map_err(|err| Error::Cache(String::from("locate"), err.to_string()))?;
-        }
-
-        // Creates a new empty cache file if it doesn't exist.
-        if !cache_location.exists() {
-            let mut file =
-                File::create(&cache_location).map_err(|err| Error::Cache(String::from("locate"), err.to_string()))?;
-            file.write_all(b"{}").map_err(|err| Error::Cache(String::from("locate"), err.to_string()))?;
-        }
-
-        Ok(cache_location)
-    }
-
-    /// Loads the cache file (the location depends on the operating system), formats it, and returns it as a cache instance. If
-    /// the cache file does not exist, or is corrupted and cannot be formatted, a new cache instance is created with default
-    /// values. The cache file is formatted by ensuring that the metadata is correct, the IP addresses are valid, and the DNS
-    /// credentials are in the correct format. If the IP addresses are not valid, they are replaced with default values
-    /// (`0.0.0.0` and `0:0:0:0:0:0:0:0` for IPv4 and IPv6 respectively). If the provider of a DNS credential is not recognized,
-    /// the credential is removed from the cache. And if the provider of DNS credential appears more than once, only the most
-    /// recent one is kept. For a list of supported providers and their formatted names, see the [GitHub
-    /// repository](https://github.com/AmonRayfa/wapi).
-    pub fn load() -> Result<Cache> {
-        // Retrieves the cache file location.
-        let cache_location = Cache::locate()?;
-
-        // Reads the cache file and returns an error if it fails.
+        // Reads the cache file to a string and returns an error if it fails.
         let cache_file =
-            std::fs::read_to_string(&cache_location).map_err(|err| Error::Cache(String::from("load"), err.to_string()))?;
+            std::fs::read_to_string(&cache_path).map_err(|err| Error::Cache(String::from("load"), err.to_string()))?;
 
-        // Deserializes the cache file and returns a new cache instance if it fails.
-        let mut cache = match serde_json::from_str(&cache_file) {
-            Ok(cache) => cache,
-            Err(_) => Cache::new(),
+        // Deserializes the cache file and returns an error if it fails.
+        let cache = match serde_json::from_str(&cache_file) {
+            Ok(c) => c,
+            Err(e) => return Err(Error::Cache(String::from("load"), e.to_string())),
         };
 
-        // Formats the cache file.
-        cache.fmt();
-
-        // Returns the loaded cache instance.
         Ok(cache)
     }
 
-    /// Saves the cache instance to `wapi/cache.json` in the user's home directory (the location depends on the operating
-    /// system). An error is returned if the cache file's location cannot be retrieved. The cache file is saved as a JSON file,
-    /// and an error is returned if the serialization fails. If a cache file already exists, it is overwritten with the new
-    /// cache instance.
+    /// Saves the [`Cache`](wapi::Cache) instance to a JSON file (the location of the file depends on the operating system). An
+    /// error is returned if the cache file's path is invalid, or if the [`Cache`](wapi::Cache) instance cannot be serialized.
+    /// If a cache file already exists, it is overwritten with the new cache.
     pub fn save(&mut self) -> Result<()> {
-        // Retrieves the cache file location.
-        let cache_location = Cache::locate()?;
+        // Retrieves the cache file's path and returns an error if it fails.
+        let cache_path = match Cache::get_path() {
+            Some(p) => p,
+            None => {
+                return Err(Error::Cache(
+                    String::from("locate"),
+                    String::from("No valid user home directory path could be retrieved from the operating system."),
+                ))
+            }
+        };
 
-        // Saves the cache file and returns an error if it fails.
+        // Ensures that the parent directories of the cache file exist, and creates them if they don't.
+        if let Some(parent_dir) = cache_path.parent() {
+            std::fs::create_dir_all(parent_dir).map_err(|err| Error::Cache(String::from("locate"), err.to_string()))?;
+        } else {
+            return Err(Error::Cache(
+                String::from("locate"),
+                String::from("No valid parent directory path could be retrieved from the cache file path."),
+            ));
+        }
+
+        // Serializes the cache instance and returns an error if it fails.
         let cache = serde_json::to_string(self).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
-        std::fs::write(cache_location, cache).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
+        std::fs::write(cache_path, cache).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
 
         Ok(())
     }
