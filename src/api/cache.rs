@@ -43,6 +43,12 @@ pub struct Cache {
     data: Data,
 }
 
+impl Default for Cache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Cache {
     /// Creates a new cache instance with default values.
     pub fn new() -> Cache {
@@ -124,10 +130,7 @@ impl Cache {
     /// Retrieves the cache file's path. A `None` value is returned if the user's home directory path cannot be retrieved from
     /// the operating system.
     pub fn get_path() -> Option<PathBuf> {
-        match BaseDirs::new() {
-            Some(base_dirs) => Some(base_dirs.home_dir().join(Path::new("wapi")).join(Path::new("cache.json"))),
-            None => None,
-        }
+        BaseDirs::new().map(|base_dirs| base_dirs.home_dir().join(Path::new("wapi")).join(Path::new("cache.json")))
     }
 
     /// Loads the cache file (the location depends on the operating system), and returns it as a [`Cache`](wapi::Cache)
@@ -188,5 +191,19 @@ impl Cache {
         std::fs::write(cache_path, cache).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
 
         Ok(())
+    }
+
+    /// Adds a DNS provider to the cache. If the DNS provider already exists in the cache, it is replaced with the new one.
+    pub fn add_dns_provider(&mut self, id: String, api_key: String, secret_api_key: String) {
+        self.fmt();
+        self.data.dns_providers.push(DNSProvider { id, api_key, secret_api_key });
+        self.fmt();
+    }
+
+    /// Removes a DNS provider from the cache. If the DNS provider does not exist in the cache, nothing happens.
+    pub fn remove_dns_provider(&mut self, id: String) {
+        self.fmt();
+        self.data.dns_providers.retain(|provider| provider.id != id);
+        self.fmt();
     }
 }
