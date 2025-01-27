@@ -7,6 +7,7 @@ use crate::error::api::{Error, Result};
 use chrono::Local;
 use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::path::{Path, PathBuf};
 
@@ -94,34 +95,31 @@ impl Cache {
             Err(_) => self.data.ipv6_address = String::from("0:0:0:0:0:0:0:0"),
         }
 
-        self.data.dns_providers = self
-            .data
-            .dns_providers
-            .iter()
-            .rev()
-            .filter(|providers| match providers.id.as_str() {
-                "alibabacloud" => self.data.dns_providers.iter().filter(|c| c.id == "alibabacloud").count() > 1,
-                "bluehost" => self.data.dns_providers.iter().filter(|c| c.id == "bluehost").count() > 1,
-                "cloudflare" => self.data.dns_providers.iter().filter(|c| c.id == "cloudflare").count() > 1,
-                "dnspod" => self.data.dns_providers.iter().filter(|c| c.id == "dnspod").count() > 1,
-                "dreamhost" => self.data.dns_providers.iter().filter(|c| c.id == "dreamhost").count() > 1,
-                "dynadot" => self.data.dns_providers.iter().filter(|c| c.id == "dynadot").count() > 1,
-                "enom" => self.data.dns_providers.iter().filter(|c| c.id == "enom").count() > 1,
-                "epik" => self.data.dns_providers.iter().filter(|c| c.id == "epik").count() > 1,
-                "gandi" => self.data.dns_providers.iter().filter(|c| c.id == "gandi").count() > 1,
-                "godaddy" => self.data.dns_providers.iter().filter(|c| c.id == "godaddy").count() > 1,
-                "hover" => self.data.dns_providers.iter().filter(|c| c.id == "hover").count() > 1,
-                "ionos" => self.data.dns_providers.iter().filter(|c| c.id == "ionos").count() > 1,
-                "namecheap" => self.data.dns_providers.iter().filter(|c| c.id == "namecheap").count() > 1,
-                "namesilo" => self.data.dns_providers.iter().filter(|c| c.id == "namesilo").count() > 1,
-                "opensrs" => self.data.dns_providers.iter().filter(|c| c.id == "opensrs").count() > 1,
-                "ovh" => self.data.dns_providers.iter().filter(|c| c.id == "ovh").count() > 1,
-                "porkbun" => self.data.dns_providers.iter().filter(|c| c.id == "porkbun").count() > 1,
-                "resellerclub" => self.data.dns_providers.iter().filter(|c| c.id == "resellerclub").count() > 1,
-                _ => false,
-            })
-            .cloned()
-            .collect();
+        // Removes duplicate DNS providers and ensures that only the most recent one is kept.
+        let mut filtered_providers = HashSet::new();
+        self.data.dns_providers.reverse();
+        self.data.dns_providers.retain(|p| match p.id.as_str() {
+            "alibabacloud" => filtered_providers.insert(p.id.clone()),
+            "bluehost" => filtered_providers.insert(p.id.clone()),
+            "cloudflare" => filtered_providers.insert(p.id.clone()),
+            "dnspod" => filtered_providers.insert(p.id.clone()),
+            "dreamhost" => filtered_providers.insert(p.id.clone()),
+            "dynadot" => filtered_providers.insert(p.id.clone()),
+            "enom" => filtered_providers.insert(p.id.clone()),
+            "epik" => filtered_providers.insert(p.id.clone()),
+            "gandi" => filtered_providers.insert(p.id.clone()),
+            "godaddy" => filtered_providers.insert(p.id.clone()),
+            "hover" => filtered_providers.insert(p.id.clone()),
+            "ionos" => filtered_providers.insert(p.id.clone()),
+            "namecheap" => filtered_providers.insert(p.id.clone()),
+            "namesilo" => filtered_providers.insert(p.id.clone()),
+            "opensrs" => filtered_providers.insert(p.id.clone()),
+            "ovh" => filtered_providers.insert(p.id.clone()),
+            "porkbun" => filtered_providers.insert(p.id.clone()),
+            "resellerclub" => filtered_providers.insert(p.id.clone()),
+            _ => false,
+        });
+        self.data.dns_providers.reverse();
 
         // Timestamps the cache.
         self.metadata.timestamp = Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string();
@@ -205,5 +203,69 @@ impl Cache {
         self.fmt();
         self.data.dns_providers.retain(|provider| provider.id != id);
         self.fmt();
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_cache() {
+        let mut cache = Cache::new();
+        assert_eq!(cache.metadata.name, "wapi-cache");
+        assert_eq!(cache.metadata.version, env!("CARGO_PKG_VERSION"));
+        assert_eq!(cache.metadata.description, "The cache file for the Wapi client.");
+        assert_eq!(cache.metadata.homepage, "https://github.com/AmonRayfa/wapi");
+        assert_eq!(cache.data.ipv4_address, "0.0.0.0");
+        assert_eq!(cache.data.ipv6_address, "0:0:0:0:0:0:0:0");
+        assert_eq!(cache.data.dns_providers.len(), 0);
+
+        cache.add_dns_provider("cloudflare".to_string(), "SOME_API_KEY_1".to_string(), "SOME_SECRET_API_KEY_1".to_string());
+        assert_eq!(cache.data.dns_providers.len(), 1);
+        assert_eq!(cache.data.dns_providers[0].api_key, "SOME_API_KEY_1");
+        assert_eq!(cache.data.dns_providers[0].secret_api_key, "SOME_SECRET_API_KEY_1");
+
+        cache.add_dns_provider("namesilo".to_string(), "SOME_API_KEY".to_string(), "SOME_SECRET_API_KEY".to_string());
+        cache.add_dns_provider("bluehost".to_string(), "SOME_API_KEY".to_string(), "SOME_SECRET_API_KEY".to_string());
+        cache.add_dns_provider("porkbun".to_string(), "SOME_API_KEY_1".to_string(), "SOME_SECRET_API_KEY_1".to_string());
+        cache.add_dns_provider("namecheap".to_string(), "SOME_API_KEY".to_string(), "SOME_SECRET_API_KEY".to_string());
+        cache.add_dns_provider("alibabacloud".to_string(), "SOME_API_KEY".to_string(), "SOME_SECRET_API_KEY".to_string());
+        cache.add_dns_provider("some_random_name".to_string(), "SOME_API_KEY".to_string(), "SOME_SECRET_API_KEY".to_string());
+        cache.add_dns_provider("dreamhost".to_string(), "SOME_API_KEY".to_string(), "SOME_SECRET_API_KEY".to_string());
+
+        cache.add_dns_provider("cloudflare".to_string(), "SOME_API_KEY_2".to_string(), "SOME_SECRET_API_KEY_2".to_string());
+        assert_eq!(cache.data.dns_providers.len(), 7);
+        assert_eq!(cache.data.dns_providers[6].api_key, "SOME_API_KEY_2");
+        assert_eq!(cache.data.dns_providers[cache.data.dns_providers.len() - 1].secret_api_key, "SOME_SECRET_API_KEY_2");
+
+        cache.add_dns_provider("porkbun".to_string(), "SOME_API_KEY_2".to_string(), "SOME_SECRET_API_KEY_2".to_string());
+        assert_eq!(cache.data.dns_providers.len(), 7);
+        assert_eq!(cache.data.dns_providers[6].api_key, "SOME_API_KEY_2");
+        assert_eq!(cache.data.dns_providers[cache.data.dns_providers.len() - 1].secret_api_key, "SOME_SECRET_API_KEY_2");
+
+        cache.remove_dns_provider("cloudflare".to_string());
+        assert_eq!(cache.data.dns_providers.len(), 6);
+        assert_eq!(cache.data.dns_providers[0].id, "namesilo");
+        assert_eq!(cache.data.dns_providers[1].id, "bluehost");
+        assert_eq!(cache.data.dns_providers[2].id, "namecheap");
+        assert_eq!(cache.data.dns_providers[3].id, "alibabacloud");
+        assert_eq!(cache.data.dns_providers[4].id, "dreamhost");
+        assert_eq!(cache.data.dns_providers[5].id, "porkbun");
+
+        cache.remove_dns_provider("dreamhost".to_string());
+        assert_eq!(cache.data.dns_providers.len(), 5);
+        assert_eq!(cache.data.dns_providers[0].id, "namesilo");
+        assert_eq!(cache.data.dns_providers[1].id, "bluehost");
+        assert_eq!(cache.data.dns_providers[2].id, "namecheap");
+        assert_eq!(cache.data.dns_providers[3].id, "alibabacloud");
+        assert_eq!(cache.data.dns_providers[4].id, "porkbun");
+
+        cache.remove_dns_provider("namesilo".to_string());
+        assert_eq!(cache.data.dns_providers.len(), 4);
+        assert_eq!(cache.data.dns_providers[0].id, "bluehost");
+        assert_eq!(cache.data.dns_providers[1].id, "namecheap");
+        assert_eq!(cache.data.dns_providers[2].id, "alibabacloud");
+        assert_eq!(cache.data.dns_providers[3].id, "porkbun");
     }
 }
