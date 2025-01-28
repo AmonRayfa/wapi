@@ -128,7 +128,7 @@ impl Cache {
     /// Retrieves the cache file's path. A `None` value is returned if the user's home directory path cannot be retrieved from
     /// the operating system.
     pub fn get_path() -> Option<PathBuf> {
-        BaseDirs::new().map(|base_dirs| base_dirs.home_dir().join(Path::new("wapi")).join(Path::new("cache.json")))
+        BaseDirs::new().map(|base_dirs| base_dirs.home_dir().join(Path::new(".wapi")).join(Path::new("cache.json")))
     }
 
     /// Loads the cache file (the location depends on the operating system), and returns it as a [`Cache`](wapi::Cache)
@@ -185,7 +185,7 @@ impl Cache {
         }
 
         // Serializes the cache instance and returns an error if it fails.
-        let cache = serde_json::to_string(self).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
+        let cache = serde_json::to_string_pretty(self).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
         std::fs::write(cache_path, cache).map_err(|err| Error::Cache(String::from("save"), err.to_string()))?;
 
         Ok(())
@@ -267,5 +267,21 @@ mod test {
         assert_eq!(cache.data.dns_providers[1].id, "namecheap");
         assert_eq!(cache.data.dns_providers[2].id, "alibabacloud");
         assert_eq!(cache.data.dns_providers[3].id, "porkbun");
+
+        match cache.save() {
+            Ok(_) => {}
+            Err(e) => panic!("{}", e),
+        };
+
+        match Cache::load() {
+            Ok(c) => {
+                assert_eq!(c.data.dns_providers.len(), 4);
+                assert_eq!(c.data.dns_providers[0].id, "bluehost");
+                assert_eq!(c.data.dns_providers[1].id, "namecheap");
+                assert_eq!(c.data.dns_providers[2].id, "alibabacloud");
+                assert_eq!(c.data.dns_providers[3].id, "porkbun");
+            }
+            Err(e) => panic!("{}", e),
+        };
     }
 }
