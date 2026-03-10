@@ -1,0 +1,17 @@
+/* 1. Default State: Hidden & White */
+html {
+	opacity: 0;
+	background-color: #101418;
+	/* Optional: Smooth transition when revealing */
+	transition: opacity 0.1s ease-in;
+}
+
+/* 2. Hides UI Elements (Theme Picker, Settings, and Version) */
+#theme-picker,
+.theme-picker,
+#settings-menu,
+a[href*="settings.html"],
+.sidebar .version,       /* <-- Hides version in older rustdoc */
+.sidebar-crate .version  /* <-- Hides version in newer rustdoc */ {
+	display: none !important;
+}

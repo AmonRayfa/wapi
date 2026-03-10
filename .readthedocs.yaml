@@ -1,0 +1,22 @@
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    rust: latest
+
+  commands:
+    # 1. Cleans the doc cache.
+    - rm -rf target/doc
+
+    # 2. Builds the documentation.
+    - cargo doc --workspace --no-deps
+
+    # 3. Creates the output directory expected by ReadTheDocs.
+    - mkdir -p $READTHEDOCS_OUTPUT/html/
+
+    # 4. Copies the cargo output (in 'target/doc') to the RTD output directory.
+    - cp -r target/doc/* $READTHEDOCS_OUTPUT/html/
+
+    # 5. Redirects users to 'wapi/index.html'.
+    - cp .cargo/redirect.html $READTHEDOCS_OUTPUT/html/index.html

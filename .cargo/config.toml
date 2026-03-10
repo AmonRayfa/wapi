@@ -1,0 +1,7 @@
+[build]
+rustdocflags = [
+  "--extend-css",
+  ".cargo/setup.css",
+  "--html-in-header",
+  ".cargo/force-theme.html",
+]

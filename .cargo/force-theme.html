@@ -1,0 +1,27 @@
+<script>
+	;(function () {
+		var pageKey = "theme-fixed-" + window.location.pathname
+
+		// A. CHECK: Have we fixed this page yet?
+		if (sessionStorage.getItem(pageKey) === "true") {
+			document.documentElement.style.opacity = "1"
+			return
+		}
+
+		// B. ACT: Fix settings and reload.
+		try {
+			// 1. Force system themes
+			localStorage.setItem("rustdoc-preferred-dark-theme", "ayu")
+			localStorage.setItem("rustdoc-preferred-light-theme", "light")
+
+			// 2. Force line numbers
+			localStorage.setItem("rustdoc-line-numbers", "true")
+		} catch (e) {}
+
+		// 3. Mark page as fixed
+		sessionStorage.setItem(pageKey, "true")
+
+		// 4. Reload
+		location.reload()
+	})()
+</script>
