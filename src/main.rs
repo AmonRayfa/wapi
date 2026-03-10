@@ -71,11 +71,11 @@ fn main() -> Result<()> {
                     client.cache.save()
                 }
                 Some(TokenCommands::Add { domains, tokens }) => {
-                    client.cache.add_domain(domains, tokens)?;
+                    client.cache.add_domains(domains, tokens)?;
                     client.cache.save()
                 }
                 Some(TokenCommands::Remove { domains, tokens }) => {
-                    client.cache.remove_domain(domains, tokens)?;
+                    client.cache.remove_domains(domains, tokens)?;
                     client.cache.save()
                 }
                 None => {

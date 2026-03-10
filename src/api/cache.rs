@@ -108,7 +108,7 @@ impl Cache {
     }
 
     /// Adds domain names to cached tokens.
-    pub(crate) fn add_domain(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
+    pub(crate) fn add_domains(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
         // Validates the domain names.
         for domain in &domains {
             match parse_domain_name(domain.as_str()) {
@@ -118,7 +118,7 @@ impl Cache {
                         bail!("Invalid domain: '{}'. Unknown TLD.", domain);
                     }
 
-                    // Must not contain more than 1 subdomains.
+                    // Ensures the domanin name does not contain more than 1 subdomain.
                     if let Some(prefix) = d.prefix()
                         && prefix.contains('.')
                     {
@@ -138,7 +138,7 @@ impl Cache {
         // Adds the domain names.
         for token in &mut self.tokens {
             if token_names.contains(&token.name) {
-                token.domains.extend(domains.clone());
+                token.domains.extend(domains.clone().into_iter().filter(|d| !domains.contains(d)));
             }
         }
 
@@ -146,7 +146,7 @@ impl Cache {
     }
 
     /// Removes domain names from cached tokens.
-    pub(crate) fn remove_domain(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
+    pub(crate) fn remove_domains(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
         // Retrieves the tokens from which the domain names will be removed; defaults to all tokens if none where provided.
         let token_names = match tokens {
             Some(v) => v,
