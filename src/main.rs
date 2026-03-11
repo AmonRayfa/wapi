@@ -41,7 +41,7 @@ fn main() -> Result<()> {
 
     if cli.providers {
         for provider in SUPPORTED_DNS_PROVIDERS {
-            println!("{}\t[{}]", provider.id, provider.url);
+            println!("{:<16}[{}]", provider.id, provider.url);
         }
         return Ok(());
     }
