@@ -55,27 +55,6 @@ pub(crate) struct Cli {
 
 #[derive(Subcommand)]
 pub(crate) enum TokenCommands {
-    /// Creates a new token in the cache.
-    Create {
-        /// The name to identify this token locally.
-        name: String,
-
-        /// The DNS service provider ID (run **wapi --providers** to get a list of all the supported providers and their IDs).
-        provider: String,
-
-        /// The primary API key.
-        api_key: String,
-
-        /// Optional secret API key.
-        secret_api_key: Option<String>,
-    },
-
-    /// Deletes a token from the cache.
-    Delete {
-        /// The local name of the token to remove.
-        name: String,
-    },
-
     /// Adds domain names to tokens.
     Add {
         /// The domain names to add.
@@ -104,6 +83,27 @@ pub(crate) enum Commands {
 
     /// Returns your current IPv6 address.
     Ipv6,
+
+    /// Creates a new token in the cache.
+    Create {
+        /// The name to identify this token locally.
+        name: String,
+
+        /// The DNS service provider ID (run **wapi --providers** to get a list of all the supported providers and their IDs).
+        provider: String,
+
+        /// The primary API key.
+        api_key: String,
+
+        /// Optional secret API key.
+        secret_api_key: Option<String>,
+    },
+
+    /// Deletes a token from the cache.
+    Delete {
+        /// The local name of the token to remove.
+        name: String,
+    },
 
     /// Manages the tokens in the cache.
     Token {

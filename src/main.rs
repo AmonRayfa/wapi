@@ -56,15 +56,15 @@ fn main() -> Result<()> {
             println!("{}", client.get_ipv6_address()?);
             Ok(())
         }
+        Some(Commands::Create { name, provider, api_key, secret_api_key }) => {
+            client.cache.create_token(name, provider, api_key, secret_api_key)?;
+            client.cache.save()
+        }
+        Some(Commands::Delete { name }) => {
+            client.cache.delete_token(name)?;
+            client.cache.save()
+        }
         Some(Commands::Token { command }) => match command {
-            Some(TokenCommands::Create { name, provider, api_key, secret_api_key }) => {
-                client.cache.create_token(name, provider, api_key, secret_api_key)?;
-                client.cache.save()
-            }
-            Some(TokenCommands::Delete { name }) => {
-                client.cache.delete_token(name)?;
-                client.cache.save()
-            }
             Some(TokenCommands::Add { domains, tokens }) => {
                 client.cache.add_domains(domains, tokens)?;
                 client.cache.save()
