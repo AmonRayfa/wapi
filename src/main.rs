@@ -25,7 +25,7 @@
 
 mod api;
 
-use api::{Cli, Client, Commands, SUPPORTED_DNS_PROVIDERS, TokenCommands};
+use api::{Cache, Cli, Client, Commands, SUPPORTED_DNS_PROVIDERS, TokenCommands};
 use clap::Parser;
 use comfy_table::Table;
 use mabe::Result;
@@ -48,50 +48,48 @@ fn main() -> Result<()> {
 
     let mut client = Client::init()?;
     match cli.command {
-        Some(Commands::Token { list, command }) => {
-            if list {
-                let mut table = Table::new();
-                table.set_header(vec!["TOKEN NAME", "PROVIDER", "DOMAINS"]);
-
-                for token in &client.cache.tokens {
-                    table.add_row(vec![&token.name, &token.provider, &token.domains.join(", ")]);
-                }
-
-                println!("{}", table);
-                return Ok(());
-            }
-
-            match command {
-                Some(TokenCommands::Create { name, provider, api_key, secret_api_key }) => {
-                    client.cache.create_token(name, provider, api_key, secret_api_key)?;
-                    client.cache.save()
-                }
-                Some(TokenCommands::Delete { name }) => {
-                    client.cache.delete_token(name)?;
-                    client.cache.save()
-                }
-                Some(TokenCommands::Add { domains, tokens }) => {
-                    client.cache.add_domains(domains, tokens)?;
-                    client.cache.save()
-                }
-                Some(TokenCommands::Remove { domains, tokens }) => {
-                    client.cache.remove_domains(domains, tokens)?;
-                    client.cache.save()
-                }
-                None => {
-                    println!(
-                        "\x1b[1;31merror:\x1b[0m no subcommand or flag was provided\n\n\x1b[1;4mUsage:\x1b[0m \x1b[1mwapi\x1b[0m token [COMMAND]\n\nFor more information, try '\x1b[1m--help\x1b[0m'."
-                    );
-                    Ok(())
-                }
-            }
-        }
         Some(Commands::Ipv4) => {
             println!("{}", client.get_ipv4_address()?);
             Ok(())
         }
         Some(Commands::Ipv6) => {
             println!("{}", client.get_ipv6_address()?);
+            Ok(())
+        }
+        Some(Commands::Token { command }) => match command {
+            Some(TokenCommands::Create { name, provider, api_key, secret_api_key }) => {
+                client.cache.create_token(name, provider, api_key, secret_api_key)?;
+                client.cache.save()
+            }
+            Some(TokenCommands::Delete { name }) => {
+                client.cache.delete_token(name)?;
+                client.cache.save()
+            }
+            Some(TokenCommands::Add { domains, tokens }) => {
+                client.cache.add_domains(domains, tokens)?;
+                client.cache.save()
+            }
+            Some(TokenCommands::Remove { domains, tokens }) => {
+                client.cache.remove_domains(domains, tokens)?;
+                client.cache.save()
+            }
+            None => {
+                println!(
+                    "\x1b[1;31merror:\x1b[0m no subcommand or flag was provided\n\n\x1b[1;4mUsage:\x1b[0m \x1b[1mwapi\x1b[0m token [COMMAND]\n\nFor more information, try '\x1b[1m--help\x1b[0m'."
+                );
+                Ok(())
+            }
+        },
+        Some(Commands::Show) => {
+            let cache = Cache::load()?;
+            let mut table = Table::new();
+            table.set_header(vec!["TOKEN NAME", "PROVIDER", "DOMAINS"]);
+
+            for token in &cache.tokens {
+                table.add_row(vec![&token.name, &token.provider, &token.domains.join(", ")]);
+            }
+
+            println!("{}", table);
             Ok(())
         }
         Some(Commands::Bind { tokens, no_ipv4, no_ipv6, ipv4, ipv6, interval }) => {

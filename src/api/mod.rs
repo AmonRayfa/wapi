@@ -3,6 +3,7 @@
 
 mod cache;
 mod client;
+pub(crate) use cache::Cache;
 pub(crate) use client::Client;
 
 use clap::{Parser, Subcommand};
@@ -106,14 +107,13 @@ pub(crate) enum Commands {
 
     /// Manages the tokens in the cache.
     Token {
-        /// Lists all the tokens stored in the cache.
-        #[arg(short, long, exclusive = true)]
-        list: bool,
-
         /// The subcommand to execute under **token**.
         #[command(subcommand)]
         command: Option<TokenCommands>,
     },
+
+    /// Prints a table of all the tokens stored in the cache.
+    Show,
 
     /// Binds your current (or provided) IPv4/IPv6 addresses to the domain names associated with the specified tokens.
     Bind {
