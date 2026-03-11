@@ -44,8 +44,8 @@ impl Cache {
         Ok(path)
     }
 
-    /// Loads the cache file (the location depends on the operating system), and returns it as a [`Cache`] instance. If to the
-    /// cache file doesn't exist, it will return a default [`Cache`] instance.
+    /// Loads the cache file (the location depends on the operating system), and returns it as a [`Cache`] instance; returns a
+    /// default [`Cache`] instance if the cache file doesn't exist.
     pub(crate) fn load() -> Result<Cache> {
         let cache_path = Cache::get()?;
 
@@ -138,7 +138,12 @@ impl Cache {
         // Adds the domain names.
         for token in &mut self.tokens {
             if token_names.contains(&token.name) {
-                token.domains.extend(domains.clone().into_iter().filter(|d| !domains.contains(d)));
+                // Checks for duplicates before adding the domains.
+                for domain in &domains {
+                    if !token.domains.contains(domain) {
+                        token.domains.push(domain.clone());
+                    }
+                }
             }
         }
 
