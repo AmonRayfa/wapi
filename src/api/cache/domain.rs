@@ -40,7 +40,7 @@ impl Domain {
 
 impl fmt::Display for Domain {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}.{}", self.host, self.root)
+        if self.host.is_empty() { write!(f, "{}", self.root) } else { write!(f, "{}.{}", self.host, self.root) }
     }
 }
 
