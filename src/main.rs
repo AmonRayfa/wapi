@@ -25,7 +25,7 @@
 
 mod api;
 
-use api::{Cache, Cli, Client, Commands, SUPPORTED_DNS_PROVIDERS, TokenCommands};
+use api::{Cache, Cli, Client, Commands, DomainJoinExt, SUPPORTED_DNS_PROVIDERS, TokenCommands};
 use clap::Parser;
 use comfy_table::Table;
 use mabe::Result;
@@ -41,7 +41,7 @@ fn main() -> Result<()> {
 
     if cli.providers {
         for provider in SUPPORTED_DNS_PROVIDERS {
-            println!("{:<16}[{}]", provider.id, provider.url);
+            println!("{:<16}[{}]", provider.id(), provider.url);
         }
         return Ok(());
     }
@@ -93,7 +93,7 @@ fn main() -> Result<()> {
             Ok(())
         }
         Some(Commands::Bind { tokens, no_ipv4, no_ipv6, ipv4, ipv6, interval }) => {
-            client.update_dns_records(tokens, no_ipv4, no_ipv6, ipv4, ipv6, interval)
+            client.update_address_records(tokens, no_ipv4, no_ipv6, ipv4, ipv6, interval)
         }
         None => {
             println!(

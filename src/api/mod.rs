@@ -3,37 +3,45 @@
 
 mod cache;
 mod client;
-pub(crate) use cache::Cache;
+pub(crate) use cache::{Cache, Domain, DomainJoinExt, Token};
 pub(crate) use client::Client;
 
 use clap::{Parser, Subcommand};
 
+use client::porkbun;
+
 /// Represents a DNS provider with its identifier and homepage.
 pub(crate) struct DnsProvider {
-    pub(crate) id: &'static str,
+    mod_path: &'static str,
     pub(crate) url: &'static str,
+}
+
+impl DnsProvider {
+    pub(crate) fn id(&self) -> &str {
+        self.mod_path.rsplit("::").next().unwrap_or(self.mod_path)
+    }
 }
 
 /// List of the supported DNS service providers.
 pub(crate) const SUPPORTED_DNS_PROVIDERS: &[DnsProvider] = &[
-    //DnsProvider { id: "alibabacloud", url: "https://www.alibabacloud.com" },
-    //DnsProvider { id: "bluehost",     url: "https://www.bluehost.com" },
-    //DnsProvider { id: "cloudflare",   url: "https://www.cloudflare.com" },
-    //DnsProvider { id: "dnspod",       url: "https://www.dnspod.com" },
-    //DnsProvider { id: "dreamhost",    url: "https://www.dreamhost.com" },
-    //DnsProvider { id: "dynadot",      url: "https://www.dynadot.com" },
-    //DnsProvider { id: "enom",         url: "https://www.enom.com" },
-    //DnsProvider { id: "epik",         url: "https://www.epik.com" },
-    //DnsProvider { id: "gandi",        url: "https://www.gandi.net" },
-    //DnsProvider { id: "godaddy",      url: "https://www.godaddy.com" },
-    //DnsProvider { id: "hover",        url: "https://www.hover.com" },
-    //DnsProvider { id: "ionos",        url: "https://www.ionos.com" },
-    //DnsProvider { id: "namecheap",    url: "https://www.namecheap.com" },
-    //DnsProvider { id: "namesilo",     url: "https://www.namesilo.com" },
-    //DnsProvider { id: "opensrs",      url: "https://opensrs.com" },
-    //DnsProvider { id: "ovh",          url: "https://www.ovhcloud.com" },
-    DnsProvider { id: "porkbun", url: "https://porkbun.com" },
-    //DnsProvider { id: "resellerclub", url: "https://www.resellerclub.com" },
+    //DnsProvider { mod_path: alibabacloud::PATH, url: "https://www.alibabacloud.com" },
+    //DnsProvider { mod_path: bluehost::PATH,     url: "https://www.bluehost.com" },
+    //DnsProvider { mod_path: cloudflare::PATH,   url: "https://www.cloudflare.com" },
+    //DnsProvider { mod_path: dnspod::PATH,       url: "https://www.dnspod.com" },
+    //DnsProvider { mod_path: dreamhost::PATH,    url: "https://www.dreamhost.com" },
+    //DnsProvider { mod_path: dynadot::PATH,      url: "https://www.dynadot.com" },
+    //DnsProvider { mod_path: enom::PATH,         url: "https://www.enom.com" },
+    //DnsProvider { mod_path: epik::PATH,         url: "https://www.epik.com" },
+    //DnsProvider { mod_path: gandi::PATH,        url: "https://www.gandi.net" },
+    //DnsProvider { mod_path: godaddy::PATH,      url: "https://www.godaddy.com" },
+    //DnsProvider { mod_path: hover::PATH,        url: "https://www.hover.com" },
+    //DnsProvider { mod_path: ionos::PATH,        url: "https://www.ionos.com" },
+    //DnsProvider { mod_path: namecheap::PATH,    url: "https://www.namecheap.com" },
+    //DnsProvider { mod_path: namesilo::PATH,     url: "https://www.namesilo.com" },
+    //DnsProvider { mod_path: opensrs::PATH,      url: "https://opensrs.com" },
+    //DnsProvider { mod_path: ovh::PATH,          url: "https://www.ovhcloud.com" },
+    DnsProvider { mod_path: porkbun::PATH, url: "https://porkbun.com" },
+    //DnsProvider { mod_path: resellerclub::PATH, url: "https://www.resellerclub.com" },
 ];
 
 #[derive(Parser)]

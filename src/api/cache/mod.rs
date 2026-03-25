@@ -3,9 +3,11 @@
 
 //! This module contains the structs and methods used to manipulate the program's cache.
 
+mod domain;
+
 use crate::api::SUPPORTED_DNS_PROVIDERS;
-use addr::parse_domain_name;
 use directories::BaseDirs;
+pub(crate) use domain::{Domain, DomainJoinExt};
 use mabe::{Context, Result, bail};
 use rkyv::{Archive, Deserialize, Serialize};
 use std::fs;
@@ -14,7 +16,7 @@ use std::path::PathBuf;
 #[derive(Archive, Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Token {
     pub(crate) name: String,
-    pub(crate) domains: Vec<String>,
+    pub(crate) domains: Vec<Domain>,
     pub(crate) provider: String,
     pub(crate) api_key: String,
     pub(crate) secret_api_key: String,
@@ -79,7 +81,7 @@ impl Cache {
         }
 
         // Ensures that the provider is valid.
-        let provider_ids: Vec<&str> = SUPPORTED_DNS_PROVIDERS.iter().map(|provider| provider.id).collect();
+        let provider_ids: Vec<&str> = SUPPORTED_DNS_PROVIDERS.iter().map(|provider| provider.id()).collect();
         if !provider_ids.contains(&provider.as_str()) {
             bail!("Unsupported provider: '{}'.", provider);
         }
@@ -110,39 +112,20 @@ impl Cache {
     /// Adds domain names to cached tokens.
     pub(crate) fn add_domains(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
         // Validates the domain names.
-        for domain in &domains {
-            match parse_domain_name(domain.as_str()) {
-                Ok(d) => {
-                    // Validates the TLD.
-                    if !d.has_known_suffix() {
-                        bail!("Invalid domain: '{}'. Unknown TLD.", domain);
-                    }
+        let domains: Vec<Domain> = domains.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
 
-                    // Ensures the domanin name does not contain more than 1 subdomain.
-                    if let Some(prefix) = d.prefix()
-                        && prefix.contains('.')
-                    {
-                        bail!("Invalid domain: '{}'. Contains more than 1 subdomain.", domain);
-                    }
-                }
-                Err(e) => bail!("{}", e), // Fails RFC syntax validation.
-            };
-        }
-
-        // Retrieves the tokens to which the domain names will be added; defaults to all tokens if none where provided.
-        let token_names = match tokens {
-            Some(v) => v,
-            None => self.tokens.iter().map(|t| t.name.clone()).collect(),
+        // Retrieves the tokens to which the domains will be added; defaults to all tokens if none where provided.
+        let tokens: Vec<&mut Token> = match tokens {
+            Some(v) => self.tokens.iter_mut().filter(|token| v.contains(&token.name)).collect(),
+            None => self.tokens.iter_mut().collect(),
         };
 
         // Adds the domain names.
-        for token in &mut self.tokens {
-            if token_names.contains(&token.name) {
-                // Checks for duplicates before adding the domains.
-                for domain in &domains {
-                    if !token.domains.contains(domain) {
-                        token.domains.push(domain.clone());
-                    }
+        for token in tokens {
+            // Checks for duplicates before adding the domains.
+            for domain in &domains {
+                if !token.domains.contains(domain) {
+                    token.domains.push(domain.clone());
                 }
             }
         }
@@ -152,17 +135,18 @@ impl Cache {
 
     /// Removes domain names from cached tokens.
     pub(crate) fn remove_domains(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
-        // Retrieves the tokens from which the domain names will be removed; defaults to all tokens if none where provided.
-        let token_names = match tokens {
-            Some(v) => v,
-            None => self.tokens.iter().map(|t| t.name.clone()).collect(),
+        // Validates the domain names.
+        let domains: Vec<Domain> = domains.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
+
+        // Retrieves the tokens from which the domains will be removed; defaults to all tokens if none where provided.
+        let tokens: Vec<&mut Token> = match tokens {
+            Some(v) => self.tokens.iter_mut().filter(|token| v.contains(&token.name)).collect(),
+            None => self.tokens.iter_mut().collect(),
         };
 
         // Removes the domain names.
-        for token in &mut self.tokens {
-            if token_names.contains(&token.name) {
-                token.domains.retain(|d| !domains.contains(d));
-            }
+        for token in tokens {
+            token.domains.retain(|d| !domains.contains(d));
         }
 
         Ok(())
