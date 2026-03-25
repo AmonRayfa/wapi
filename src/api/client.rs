@@ -166,9 +166,13 @@ impl Client {
 
                                             if &response.status == "ERROR" {
                                                 match response.message {
-                                                    Some(msg) => bail!("{}", msg),
+                                                    Some(msg) => bail!(
+                                                        "Failed to update the 'A' record of domain '{}' on Porkbun.\n{}",
+                                                        domain,
+                                                        msg
+                                                    ),
                                                     None => bail!(
-                                                        "Failed to update the 'A' record of domain '{}' on Porkbun. No cause was provided.",
+                                                        "Failed to update the 'A' record of domain '{}' on Porkbun.\nNo cause was provided.",
                                                         domain
                                                     ),
                                                 };
@@ -190,9 +194,13 @@ impl Client {
 
                                             if &response.status == "ERROR" {
                                                 match response.message {
-                                                    Some(msg) => bail!("{}", msg),
+                                                    Some(msg) => bail!(
+                                                        "Failed to update the 'AAAA' record of domain '{}' on Porkbun.\n{}",
+                                                        domain,
+                                                        msg
+                                                    ),
                                                     None => bail!(
-                                                        "Failed to update the 'AAAA' record of domain '{}' on Porkbun. No cause was provided.",
+                                                        "Failed to update the 'AAAA' record of domain '{}' on Porkbun.\nNo cause was provided.",
                                                         domain
                                                     ),
                                                 };
