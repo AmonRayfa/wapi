@@ -3,6 +3,7 @@
 
 //! This module contains the struct and methods used to retrieve the public IP address of the client and update the DNS records.
 
+pub(crate) mod cache;
 pub(crate) mod porkbun;
 
 use crate::api::{Cache, Token};

@@ -1,10 +1,9 @@
 // Copyright 2026 Amon Rayfa.
 // SPDX-License-Identifier: Apache-2.0.
 
-mod cache;
 mod client;
-pub(crate) use cache::{Cache, Domain, DomainJoinExt, Token};
 pub(crate) use client::Client;
+pub(crate) use client::cache::{Cache, Domain, DomainJoinExt, Token};
 
 use clap::{Parser, Subcommand};
 
