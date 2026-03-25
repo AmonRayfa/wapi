@@ -1,7 +1,7 @@
 // Copyright 2026 Amon Rayfa.
 // SPDX-License-Identifier: Apache-2.0.
 
-//! This module contains the structs and methods used to manipulate the program's cache.
+//! This module contains the structs and methods used to manipulate the client's cache.
 
 mod domain;
 
@@ -10,25 +10,21 @@ use directories::BaseDirs;
 pub(crate) use domain::{Domain, DomainJoinExt};
 use mabe::{Context, Result, bail};
 use rkyv::{Archive, Deserialize, Serialize};
+use std::collections::{HashMap, HashSet, hash_map::Entry};
 use std::fs;
 use std::path::PathBuf;
 
 #[derive(Archive, Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Token {
-    pub(crate) name: String,
-    pub(crate) domains: Vec<Domain>,
+pub(crate) struct TokenData {
     pub(crate) provider: String,
     pub(crate) api_key: String,
     pub(crate) secret_api_key: String,
+    pub(crate) domains: HashSet<Domain>,
 }
 
 /// The struct used to manipulate the client's cache.
 #[derive(Archive, Debug, Clone, Serialize, Deserialize, Default)]
-pub(crate) struct Cache {
-    pub(crate) ipv4: String,
-    pub(crate) ipv6: String,
-    pub(crate) tokens: Vec<Token>,
-}
+pub(crate) struct Cache(HashMap<String, TokenData>);
 
 impl Cache {
     /// Returns the path to the cache file (if it exists).
@@ -66,6 +62,11 @@ impl Cache {
         Ok(cache)
     }
 
+    /// Gives a read-only access to the cache's content.
+    pub(crate) fn content(&self) -> &HashMap<String, TokenData> {
+        &self.0
+    }
+
     /// Creates a token in the cache.
     pub(crate) fn create_token(
         &mut self,
@@ -74,39 +75,33 @@ impl Cache {
         api_key: String,
         secret_api_key: Option<String>,
     ) -> Result<()> {
-        // Ensures that the token name is unique.
-        let token_names: Vec<&str> = self.tokens.iter().map(|token| token.name.as_str()).collect();
-        if token_names.contains(&name.as_str()) {
-            bail!("Token name '{}' already exists.", name);
-        }
-
         // Ensures that the provider is valid.
         let provider_ids: Vec<&str> = SUPPORTED_DNS_PROVIDERS.iter().map(|provider| provider.id()).collect();
         if !provider_ids.contains(&provider.as_str()) {
-            bail!("Unsupported provider: '{}'.", provider);
+            bail!("Unsupported provider: '{}'.\nRun 'wapi -p' to get a list of the supported DNS service providers.", provider);
         }
 
-        // Adds the token to the cache.
-        self.tokens.push(Token {
-            name,
-            domains: Vec::new(),
-            provider,
-            api_key,
-            secret_api_key: secret_api_key.unwrap_or_default(),
-        });
-        Ok(())
+        // Adds the token to the cache while ensuring the token name is unique.
+        match self.0.entry(name.clone()) {
+            Entry::Occupied(_) => bail!("Token name '{}' already exists.", name),
+            Entry::Vacant(vacant_entry) => {
+                vacant_entry.insert(TokenData {
+                    provider,
+                    api_key,
+                    secret_api_key: secret_api_key.unwrap_or_default(),
+                    domains: HashSet::new(),
+                });
+                Ok(())
+            }
+        }
     }
 
     /// Deletes a token from the cache.
     pub(crate) fn delete_token(&mut self, name: String) -> Result<()> {
-        for (index, token) in self.tokens.iter().enumerate() {
-            if name == token.name {
-                self.tokens.remove(index);
-                return Ok(());
-            }
+        match self.0.remove(&name) {
+            Some(_) => Ok(()),
+            None => bail!("Token name '{}' does not exist.", name),
         }
-
-        bail!("The token name you provided does not exist in the cache: '{}'.", name);
     }
 
     /// Adds domain names to cached tokens.
@@ -114,18 +109,17 @@ impl Cache {
         // Validates the domain names.
         let domains: Vec<Domain> = domains.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
 
-        // Retrieves the tokens to which the domains will be added; defaults to all tokens if none where provided.
-        let tokens: Vec<&mut Token> = match tokens {
-            Some(v) => self.tokens.iter_mut().filter(|token| v.contains(&token.name)).collect(),
-            None => self.tokens.iter_mut().collect(),
+        // Defines the tokens to which the domains will be added; defaults to all tokens if none where provided.
+        let target_tokens = match tokens {
+            Some(v) => v,
+            None => self.0.keys().cloned().collect(),
         };
 
         // Adds the domain names.
-        for token in tokens {
-            // Checks for duplicates before adding the domains.
+        for token in &target_tokens {
             for domain in &domains {
-                if !token.domains.contains(domain) {
-                    token.domains.push(domain.clone());
+                if let Some(t) = self.0.get_mut(token) {
+                    t.domains.insert(domain.clone());
                 }
             }
         }
@@ -138,15 +132,19 @@ impl Cache {
         // Validates the domain names.
         let domains: Vec<Domain> = domains.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
 
-        // Retrieves the tokens from which the domains will be removed; defaults to all tokens if none where provided.
-        let tokens: Vec<&mut Token> = match tokens {
-            Some(v) => self.tokens.iter_mut().filter(|token| v.contains(&token.name)).collect(),
-            None => self.tokens.iter_mut().collect(),
+        // Defines the tokens from which the domains will be removed; defaults to all tokens if none where provided.
+        let target_tokens = match tokens {
+            Some(v) => v,
+            None => self.0.keys().cloned().collect(),
         };
 
         // Removes the domain names.
-        for token in tokens {
-            token.domains.retain(|d| !domains.contains(d));
+        for token in &target_tokens {
+            for domain in &domains {
+                if let Some(t) = self.0.get_mut(token) {
+                    t.domains.remove(domain);
+                }
+            }
         }
 
         Ok(())

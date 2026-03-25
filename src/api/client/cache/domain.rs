@@ -3,7 +3,8 @@ use mabe::{Context, Result, bail};
 use rkyv::{Archive, Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Archive, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Archive, Debug, Clone, Eq, Hash, PartialEq, Serialize, Deserialize)]
+#[rkyv(attr(derive(Hash, PartialEq, Eq)))]
 pub(crate) struct Domain {
     pub(crate) root: String,
     pub(crate) host: String,
