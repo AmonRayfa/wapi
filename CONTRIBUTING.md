@@ -10,15 +10,15 @@ Here are the main directories and files in the project:
 .
 ├── src/
 │   ├── api/
-│   │   ├── cache.rs
-│   │   ├── client.rs
+│   │   ├── client/
+│   │   │   └── cache/
 │   │   └── mod.rs
 │   └── main.rs
 ├── Cargo.toml
 └── package.json
 ```
 
-The `src/api/cache.rs` and `src/api/client` define files define the structs and methods to manipulate the CLI's cache and client respectively. And, `src/api/mod.rs` file defines the topology of the CLI. The rest should be pretty self-explanatory.
+The `src/api/mod.rs` file defines the topology of the CLI. The `src/api/client/` directory defines the structs and methods to manipulate the CLI's client; it contains separate submodules for each DNS provider, housing the specific request logic for updating address records across different platforms. The `src/api/client/cache/` directory handles the client’s caching logic. The rest of the structure is self-explanatory.
 
 Additionally, the `package.json` file configures the [Node](https://nodejs.org) environment required to run the [Trunk CLI](https://docs.trunk.io/code-quality/overview) metalinter.
 
