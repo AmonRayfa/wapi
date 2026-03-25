@@ -1,5 +1,5 @@
 use super::AddressRecordData;
-use crate::api::{Domain, Token};
+use crate::api::{Domain, TokenData};
 use mabe::{Context, Result, bail};
 use reqwest::blocking::Client as ClientHandle;
 use serde::Deserialize;
