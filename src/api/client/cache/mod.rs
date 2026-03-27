@@ -14,7 +14,7 @@ use std::collections::{HashMap, HashSet, hash_map::Entry};
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Archive, Debug, Clone, Serialize, Deserialize)]
+#[derive(Archive, Clone, Debug, Default, Deserialize, Serialize)]
 pub(crate) struct TokenData {
     pub(crate) provider: String,
     pub(crate) api_key: String,
@@ -23,7 +23,7 @@ pub(crate) struct TokenData {
 }
 
 /// The struct used to manipulate the client's cache.
-#[derive(Archive, Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Archive, Clone, Debug, Default, Deserialize, Serialize)]
 pub(crate) struct Cache(HashMap<String, TokenData>);
 
 impl Cache {
@@ -105,12 +105,12 @@ impl Cache {
     }
 
     /// Adds domain names to cached tokens.
-    pub(crate) fn add_domains(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
+    pub(crate) fn add_domains(&mut self, domain_names: Vec<String>, token_names: Option<Vec<String>>) -> Result<()> {
         // Validates the domain names.
-        let domains: Vec<Domain> = domains.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
+        let domains: Vec<Domain> = domain_names.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
 
-        // Defines the tokens to which the domains will be added; defaults to all tokens if none where provided.
-        let target_tokens = match tokens {
+        // Defines the tokens to which the domains will be added; defaults to all tokens if none were provided.
+        let target_tokens = match token_names {
             Some(v) => v,
             None => self.0.keys().cloned().collect(),
         };
@@ -128,12 +128,12 @@ impl Cache {
     }
 
     /// Removes domain names from cached tokens.
-    pub(crate) fn remove_domains(&mut self, domains: Vec<String>, tokens: Option<Vec<String>>) -> Result<()> {
+    pub(crate) fn remove_domains(&mut self, domain_names: Vec<String>, token_names: Option<Vec<String>>) -> Result<()> {
         // Validates the domain names.
-        let domains: Vec<Domain> = domains.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
+        let domains: Vec<Domain> = domain_names.iter().map(|d| Domain::from(d)).collect::<Result<Vec<Domain>>>()?;
 
-        // Defines the tokens from which the domains will be removed; defaults to all tokens if none where provided.
-        let target_tokens = match tokens {
+        // Defines the tokens from which the domains will be removed; defaults to all tokens if none were provided.
+        let target_tokens = match token_names {
             Some(v) => v,
             None => self.0.keys().cloned().collect(),
         };
