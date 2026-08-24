@@ -8,16 +8,16 @@ use std::borrow::Borrow;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
+/// A named reference to a DNS service provider account. The API keys of a token are not stored here (nor anywhere else in the
+/// cache): they live in the OS keychain, managed by the [`keystore`](crate::api::client::keystore) module.
 #[derive(Archive, Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Token {
     pub(crate) name: String,
     pub(crate) provider: Provider,
-    pub(crate) api_key: String,
-    pub(crate) secret_api_key: Option<String>,
 }
 
 impl Token {
-    pub(crate) fn new(name: impl Into<String>, provider: impl Into<String>, api_key: impl Into<String>) -> Result<Self> {
+    pub(crate) fn new(name: impl Into<String>, provider: impl Into<String>) -> Result<Self> {
         let name = name.into();
         if name.is_empty() || !name.as_str().chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') {
             bail!(
@@ -25,13 +25,8 @@ impl Token {
                 name
             );
         } else {
-            Ok(Self { name, provider: Provider::new(provider)?, api_key: api_key.into(), secret_api_key: None })
+            Ok(Self { name, provider: Provider::new(provider)? })
         }
-    }
-
-    pub(crate) fn with_secret(mut self, secret: impl Into<String>) -> Self {
-        self.secret_api_key = Some(secret.into());
-        self
     }
 
     pub(crate) fn as_str(&self) -> &str {
@@ -77,5 +72,29 @@ impl Hash for rkyv::Archived<Token> {
 impl Borrow<str> for Token {
     fn borrow(&self) -> &str {
         &self.name
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_names_are_accepted() {
+        for name in ["porkbun-main", "home_server", "Token123"] {
+            assert!(Token::new(name, "porkbun").is_ok(), "'{}' should be a valid token name", name);
+        }
+    }
+
+    #[test]
+    fn invalid_names_are_rejected() {
+        for name in ["", "@porkbun", "my token", "sneaky!", "a.b"] {
+            assert!(Token::new(name, "porkbun").is_err(), "'{}' should be an invalid token name", name);
+        }
+    }
+
+    #[test]
+    fn unknown_providers_are_rejected() {
+        assert!(Token::new("valid-name", "not-a-provider").is_err());
     }
 }

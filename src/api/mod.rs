@@ -5,7 +5,8 @@ mod client;
 mod parser;
 
 pub(crate) use client::Client;
-pub(crate) use client::cache::{Cache, HostJoinExt};
+pub(crate) use client::cache::HostJoinExt;
+pub(crate) use client::keystore::{self, Credentials};
 pub(crate) use client::providers::PROVIDERS;
 pub(crate) use parser::collect_mappings;
 
@@ -38,16 +39,17 @@ pub(crate) enum Commands {
     /// Creates and deletes tokens. When no arguments are provided, it returns all the tokens stored in the cache with their
     /// associated DNS service provider and hostnames.
     Token {
-        /// The name of the token to create or delete (prefixed with `@`, e.g., *@porkbun*).
+        /// The name of the token to create or delete (e.g., *porkbun-main*). Token names may only contain alphanumeric
+        /// characters, hyphens, and underscores.
         name: Option<String>,
 
         /// The DNS service provider ID of the token that will be created (run **wapi providers** to get all the
         /// supported providers and their IDs).
-        #[arg(short, long, requires = "names", conflicts_with = "delete")]
+        #[arg(short, long, requires = "name", conflicts_with = "delete")]
         provider: Option<String>,
 
-        /// Deletes provided token from the cache.
-        #[arg(short, long, requires = "names", conflicts_with = "provider")]
+        /// Deletes the provided token from the cache.
+        #[arg(short, long, requires = "name", conflicts_with = "provider")]
         delete: bool,
     },
 
@@ -67,15 +69,15 @@ pub(crate) enum Commands {
 
     /// Binds your current (or provided) IPv4/IPv6 addresses to the hostnames associated with the specified tokens.
     Bind {
-        /// The tokens to update, prefixed with `@` (e.g., *@cloudflare* *@porkbun*).
+        /// The tokens to update, with or without an `@` prefix (e.g., *@cloudflare* *porkbun*).
         /// Defaults to all tokens in the cache if none are provided.
         tokens: Option<Vec<String>>,
 
-        // Excludes the IPv4 address from the binding process.
+        /// Excludes the IPv4 address from the binding process.
         #[arg(long)]
         no_ipv4: bool,
 
-        /// Excludes IPv6 address from the binding process.
+        /// Excludes the IPv6 address from the binding process.
         #[arg(long)]
         no_ipv6: bool,
 

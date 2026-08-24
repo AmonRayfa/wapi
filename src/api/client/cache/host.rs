@@ -113,6 +113,8 @@ impl HostJoinExt for HashMap<Host, AddrData> {
     }
 }
 
+// `AAAA` is the canonical DNS record type name, so the acronym lint doesn't apply.
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Copy, Debug)]
 pub enum AddrType {
     A,
@@ -141,22 +143,19 @@ pub struct AddrData {
 }
 
 impl AddrData {
-    pub fn update_ip(&mut self, addr_type: AddrType, ip: impl Into<String>) -> Result<()> {
+    /// Validates the provided IP address and stores its normalized form.
+    pub fn set_ip(&mut self, addr_type: AddrType, ip: impl Into<String>) -> Result<()> {
         let ip = ip.into();
         match addr_type {
             AddrType::A => {
-                if self.ipv4.is_some() {
-                    self.ipv4 = Some(
-                        ip.parse::<Ipv4Addr>().context(format!("The provided IPv4 address is invalid: '{}'.", ip))?.to_string(),
-                    )
-                }
+                self.ipv4 = Some(
+                    ip.parse::<Ipv4Addr>().context(format!("The provided IPv4 address is invalid: '{}'.", ip))?.to_string(),
+                )
             }
             AddrType::AAAA => {
-                if self.ipv6.is_some() {
-                    self.ipv6 = Some(
-                        ip.parse::<Ipv6Addr>().context(format!("The provided IPv6 address is invalid: '{}'.", ip))?.to_string(),
-                    )
-                }
+                self.ipv6 = Some(
+                    ip.parse::<Ipv6Addr>().context(format!("The provided IPv6 address is invalid: '{}'.", ip))?.to_string(),
+                )
             }
         };
         Ok(())
@@ -168,5 +167,45 @@ impl AddrData {
 
     pub fn ipv6(&self) -> Option<String> {
         self.ipv6.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hostnames_are_parsed_and_lowercased() {
+        let host = Host::new("Sub.Example.COM").unwrap();
+        assert_eq!(host.as_str(), "sub.example.com");
+        assert_eq!(host.dom(), "example.com");
+        assert_eq!(host.sub(), "sub");
+    }
+
+    #[test]
+    fn root_domains_have_no_subdomain() {
+        let host = Host::new("example.com").unwrap();
+        assert_eq!(host.dom(), "example.com");
+        assert_eq!(host.sub(), "");
+    }
+
+    #[test]
+    fn invalid_hostnames_are_rejected() {
+        for name in ["", "no-tld", "example.notarealtld", "spa ce.com"] {
+            assert!(Host::new(name).is_err(), "'{}' should be an invalid hostname", name);
+        }
+    }
+
+    #[test]
+    fn set_ip_validates_and_normalizes() {
+        let mut data = AddrData::default();
+
+        assert!(data.set_ip(AddrType::A, "not-an-ip").is_err());
+        assert!(data.set_ip(AddrType::AAAA, "999::g").is_err());
+
+        data.set_ip(AddrType::A, "192.168.1.1").unwrap();
+        data.set_ip(AddrType::AAAA, "2001:0db8:0000:0000:0000:0000:0000:0001").unwrap();
+        assert_eq!(data.ipv4().as_deref(), Some("192.168.1.1"));
+        assert_eq!(data.ipv6().as_deref(), Some("2001:db8::1"));
     }
 }

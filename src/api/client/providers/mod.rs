@@ -3,9 +3,37 @@
 
 pub(crate) mod porkbun;
 
+use super::cache::{AddrType, Host};
+use super::keystore::Credentials;
 use mabe::{Result, bail};
+use reqwest::blocking::Client as ClientHandle;
 use rkyv::{Archive, Deserialize, Serialize};
 use std::fmt;
+
+type GetRecordFn = fn(&ClientHandle, &Credentials, &Host, AddrType) -> Result<Option<String>>;
+type WriteRecordFn = fn(&ClientHandle, &Credentials, &Host, AddrType, &str) -> Result<()>;
+
+/// The request functions a DNS service provider module must expose to support address record synchronization.
+pub(crate) struct ProviderApi {
+    /// Returns the current content of the address record of a host (or [`None`] if the record doesn't exist).
+    pub(crate) get: GetRecordFn,
+    /// Creates the address record of a host with the provided IP address.
+    pub(crate) create: WriteRecordFn,
+    /// Updates the address record of a host with the provided IP address.
+    pub(crate) update: WriteRecordFn,
+}
+
+/// Returns the request functions of a DNS service provider (or [`None`] if the provider is not supported yet).
+pub(crate) fn api_for(provider_id: &str) -> Option<ProviderApi> {
+    match provider_id {
+        "porkbun" => Some(ProviderApi {
+            get: porkbun::get_address_record,
+            create: porkbun::create_address_record,
+            update: porkbun::update_address_record,
+        }),
+        _ => None,
+    }
+}
 
 macro_rules! provider {
     ($mod_name:ident, $url:literal) => {

@@ -25,18 +25,22 @@
 
 mod api;
 
-use api::{Cache, Cli, Client, Commands, HostJoinExt, PROVIDERS, collect_mappings};
+use api::{Cli, Client, Commands, Credentials, HostJoinExt, PROVIDERS, collect_mappings, keystore};
 use clap::Parser;
 use comfy_table::Table;
 use mabe::{Context, Result};
 use std::io::{self, Write};
+
+/// The full [Phased Versioning](https://phased-versioning.koseka.net) version of the program; it must match the latest release
+/// tag when a version branch is cut.
+const VERSION: &str = "v1-alpha.0";
 
 #[mabe::main]
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     if cli.version {
-        println!("dev");
+        println!("{}", VERSION);
         return Ok(());
     }
 
@@ -64,7 +68,7 @@ fn main() -> Result<()> {
         Some(Commands::Token { name, provider, delete }) => match name {
             Some(token_name) => {
                 if !delete {
-                    // TODO: Prompt the user to type in the provider ID and API keys.
+                    // Prompts the user for the provider ID and API keys.
                     let provider_id = match provider {
                         Some(id) => id,
                         None => {
@@ -85,18 +89,21 @@ fn main() -> Result<()> {
                         .context("Failed to read the secret API key from the terminal.")?;
                     let secret_api_key = if secret_api_key_input.is_empty() { None } else { Some(secret_api_key_input) };
 
-                    client.cache.create_token(token_name, provider_id, api_key, secret_api_key)?;
+                    // Validates the token before touching the OS keychain, and stores the API keys before saving the cache, so
+                    // that a keychain failure never leaves a token without keys.
+                    client.cache.create_token(&token_name, provider_id)?;
+                    keystore::store(&token_name, &Credentials { api_key, secret_api_key })?;
                 } else {
-                    client.cache.delete_token(token_name)?;
+                    client.cache.delete_token(&token_name)?;
+                    keystore::delete(&token_name)?;
                 }
                 client.cache.save()
             }
             None => {
-                let cache = Cache::load()?;
                 let mut table = Table::new();
                 table.set_header(vec!["TOKEN NAME", "PROVIDER ID", "HOSTNAMES"]);
 
-                for (token, dns_maps) in cache.content().iter() {
+                for (token, dns_maps) in client.cache.content().iter() {
                     table.add_row(vec![&token.to_string(), &token.provider.to_string(), &dns_maps.join(", ")]);
                 }
 
@@ -127,8 +134,9 @@ fn main() -> Result<()> {
             client.cache.save()
         }
         Some(Commands::Bind { tokens, no_ipv4, no_ipv6, ipv4, ipv6, interval }) => {
-            let token_names = match tokens {
-                Some(n) => n,
+            let token_names: Vec<String> = match tokens {
+                // Token names are accepted with or without the `@` prefix used by the track/untrack commands.
+                Some(n) => n.into_iter().map(|t| t.trim_start_matches('@').to_string()).collect(),
                 None => client.cache.content().keys().map(|token| token.to_string()).collect(),
             };
             client.update_address_records(token_names, no_ipv4, no_ipv6, ipv4, ipv6, interval)
