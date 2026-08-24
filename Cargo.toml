@@ -3,7 +3,7 @@ name = "wapi"
 # The SemVer projection of the Phased Versioning version (MAJOR = generation, MINOR = cumulative phase ordinal, PATCH =
 # revision); it must be set alongside the VERSION constant in src/main.rs before a release is cut, and stays 0.0.0 while no
 # release exists.
-version = "1.0.1"
+version = "1.0.2"
 edition = "2024"
 authors = ["Amon Rayfa <amon@koseka.net>"]
 description = "A cross-platform DDNS client that automatically updates your DNS mappings when your IP address changes."
@@ -32,13 +32,13 @@ publish = false
 [dependencies]
 addr = "0.15"
 clap = { version = "4.5", features = ["derive"] }
-comfy-table = "7.2"
+comfy-table = "8.0"
 directories = "6.0"
-keyring = { version = "3.6", features = [
-  "apple-native",
-  "sync-secret-service",
-  "vendored",
-  "windows-native",
+# The zbus secret service store is pure Rust, so Linux builds don't require any system libraries.
+keyring = { version = "4.1", features = [
+  "apple-native-keyring-store",
+  "windows-native-keyring-store",
+  "zbus-secret-service-keyring-store",
 ] }
 mabe = { git = "https://github.com/AmonRayfa/mabe", branch = "v1" }
 reqwest = { version = "0.13", features = ["blocking", "json"] }
