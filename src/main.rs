@@ -49,7 +49,7 @@ use std::io::{self, Write};
 
 /// The full [Phased Versioning](https://phased-versioning.koseka.net) version of the program; it must be set to the release
 /// tag (e.g., *v1-alpha.0*) before a release is cut, and stays *dev* while no release exists.
-const VERSION: &str = "v1-alpha.1";
+const VERSION: &str = "v1-alpha.2";
 
 #[mabe::main]
 fn main() -> Result<()> {
