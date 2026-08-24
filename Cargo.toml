@@ -3,7 +3,7 @@ name = "wapi"
 # The SemVer projection of the Phased Versioning version (MAJOR = generation, MINOR = cumulative phase ordinal, PATCH =
 # revision); it must be set alongside the VERSION constant in src/main.rs before a release is cut, and stays 0.0.0 while no
 # release exists.
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 authors = ["Amon Rayfa <amon@koseka.net>"]
 description = "A cross-platform DDNS client that automatically updates your DNS mappings when your IP address changes."
@@ -37,6 +37,7 @@ directories = "6.0"
 keyring = { version = "3.6", features = [
   "apple-native",
   "sync-secret-service",
+  "vendored",
   "windows-native",
 ] }
 mabe = { git = "https://github.com/AmonRayfa/mabe", branch = "v1" }
