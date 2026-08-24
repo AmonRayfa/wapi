@@ -16,6 +16,7 @@ env:
 jobs:
   ci:
     strategy:
+      fail-fast: false # Lets the other platforms finish when one fails, so failures are diagnosable per platform.
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
