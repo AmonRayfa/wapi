@@ -6,7 +6,6 @@ Security updates are provided for the following versions of the project:
 
 | Version |     Supported      |
 | :------ | :----------------: |
-| `v1`    | :white_check_mark: |
 | `dev`   | :white_check_mark: |
 
 ## Credential Storage
