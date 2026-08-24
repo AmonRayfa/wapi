@@ -30,14 +30,17 @@ The client is designed to support a wide range of DNS service providers (see the
 | Branch | Description                                                                             |
 | :----- | :-------------------------------------------------------------------------------------- |
 | `dev`  | Active development branch (nightly); the only branch that can receive breaking changes. |
+| `v1`   | Latest stable generation; receives fixes and features, never breaking changes.          |
 
 <h2><img height="20" alt="installation" src="./img/installation.svg">&nbsp;&nbsp;Installation</h2>
 
-The project is distributed as a Git repository, by branch. There is no stable version branch yet, so the only available version is the **nightly version** (tracking the latest commits on the `dev` branch):
+The project is distributed as a Git repository, by branch. To install the **latest stable version** of the current generation, run:
 
 ```sh
-cargo install --git https://github.com/AmonRayfa/wapi --branch dev
+cargo install --git https://github.com/AmonRayfa/wapi --branch v1
 ```
+
+To use the **nightly version** instead (tracking the latest commits on the `dev` branch), replace `v1` with `dev`.
 
 If you want to install `cargo`, you can do so by following the instructions on the [Rust website](https://www.rust-lang.org/tools/install/).
 
