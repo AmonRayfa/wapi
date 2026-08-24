@@ -29,7 +29,7 @@ Supported providers are marked with a white check mark (:white_check_mark:), whi
 | [ResellerClub](https://www.resellerclub.com)           | `resellerclub` | :hourglass_flowing_sand: |
 | [Squarespace Domains](https://domains.squarespace.com) |    **N.A.**    |           :x:            |
 
-You can also access the list of all the supported providers through the CLI by using the `wapi -p` command.
+You can also access the list of all the supported providers through the CLI by using the `wapi providers` command.
 
 Any feedback or suggestions for new providers or existing ones are welcome.
 
