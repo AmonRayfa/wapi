@@ -6,7 +6,12 @@ Security updates are provided for the following versions of the project:
 
 | Version |     Supported      |
 | :------ | :----------------: |
+| `v1`    | :white_check_mark: |
 | `dev`   | :white_check_mark: |
+
+## Credential Storage
+
+The API keys of your DNS service provider accounts are stored in the operating system's keychain (i.e., the macOS Keychain, the Windows Credential Manager, or the Linux secret service), and never touch the disk in plain text. The rest of the client's state (tokens, hostnames, and cached IP addresses) lives in `~/.wapi/cache`, which is restricted to your user account on Unix systems.
 
 ## Reporting a Vulnerability
 

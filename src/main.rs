@@ -6,9 +6,9 @@
 //! especially useful for users running services on home or private networks with dynamic IP addresses, ensuring their hostnames
 //! always resolve to the correct IP address.
 //!
-//! The client supports a wide range of DNS service providers, making it a versatile solution for managing your DNS records. It
-//! provides a user-friendly command-line, perfect for workflows involving external scripts or automation tools, as well as a
-//! flexible Rust library for developers who want to integrate the client into their own applications.
+//! The client is designed to support a wide range of DNS service providers, making it a versatile solution for managing your
+//! DNS records. It provides a user-friendly command-line interface, perfect for workflows involving external scripts or
+//! automation tools.
 //!
 //! # Cargo Features
 //!
@@ -17,11 +17,27 @@
 //!
 //! # Installation
 //!
-//! -> TODO
+//! The client is distributed as a Git repository, by branch, following
+//! [Phased Versioning](https://phased-versioning.koseka.net). To install the latest stable version of the current generation,
+//! run:
+//!
+//! ```sh
+//! cargo install --git https://github.com/AmonRayfa/wapi --branch v1
+//! ```
+//!
+//! To install the nightly version instead (tracking the latest commits), use the `dev` branch.
 //!
 //! # Usage
 //!
-//! -> TODO
+//! ```sh
+//! wapi providers                                # Lists the supported DNS service providers and their IDs.
+//! wapi token porkbun-main                       # Creates a token (the provider ID and API keys are prompted).
+//! wapi track example.com www.example.com @porkbun-main    # Tracks hostnames by associating them with the token.
+//! wapi bind                                     # Binds your current IP addresses to all the tracked hostnames.
+//! wapi bind --interval 300                      # Keeps the DNS records up to date, checking every 5 minutes.
+//! ```
+//!
+//! Run `wapi --help` for the full list of commands and options.
 
 mod api;
 

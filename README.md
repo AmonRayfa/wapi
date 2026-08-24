@@ -16,41 +16,53 @@
   <a href="https://github.com/AmonRayfa/wapi/milestones"><img src="https://img.shields.io/github/milestones/all/AmonRayfa/wapi?logo=github&color=5288DF" alt="milestones" /></a>
   <a href="https://github.com/AmonRayfa/wapi/stargazers"><img src="https://img.shields.io/github/stars/AmonRayfa/wapi?style=flat&logo=github&color=DCB456" alt="stars" /></a>
   <br>
-  <a href="Cargo.toml"><img src="https://img.shields.io/badge/Dependencies-9-black?style=flat&logo=rust&logoColor=black" alt="Dependencies" /></a>
-  <a href="Cargo.toml"><img src="https://img.shields.io/badge/Size-x.ykB-black?style=flat&logo=rust&logoColor=black" alt="Size" /></a>
+  <a href="Cargo.toml"><img src="https://img.shields.io/badge/Dependencies-11-black?style=flat&logo=rust&logoColor=black" alt="Dependencies" /></a>
 </div>
 
 ---
 
 **Wapi** is a cross-platform command-line DDNS (Dynamic Domain Name System) client that keeps your DNS mappings up to date by automatically adjusting them whenever your public IP address changes. This is especially useful for users running services on home or private networks with dynamic IP addresses, ensuring their hostnames always resolve to the correct IP address.
 
-The client supports a wide range of DNS service providers (see [DNS Providers List](DNS-PROVIDERS.md)), making it a versatile solution for managing your DNS records. It provides a user-friendly command-line, perfect for workflows involving external scripts or automation tools, as well as a flexible Rust library for developers who want to integrate the client into their own applications.
+The client is designed to support a wide range of DNS service providers (see the [DNS Providers List](DNS-PROVIDERS.md) for the current support status of each provider), making it a versatile solution for managing your DNS records. It provides a user-friendly command-line interface, perfect for workflows involving external scripts or automation tools.
 
 <h2><img height="20" alt="branches" src="./img/branches.svg">&nbsp;&nbsp;Branches</h2>
 
-| Branch | Description                |
-| :----- | :------------------------- |
-| `dev`  | Active development branch. |
+| Branch | Description                                                                             |
+| :----- | :-------------------------------------------------------------------------------------- |
+| `dev`  | Active development branch (nightly); the only branch that can receive breaking changes. |
+| `v1`   | Latest stable generation; receives fixes and features, never breaking changes.          |
 
 <h2><img height="20" alt="installation" src="./img/installation.svg">&nbsp;&nbsp;Installation</h2>
 
-The project is still in active development so, there is no fully stable version yet. To use the **nightly version** (tracking the latest commits on the `dev` branch), add the repository link to your `Cargo.toml` file:
+The project is distributed as a Git repository, by branch. To install the **latest stable version** of the current generation, run:
 
 ```sh
-cargo install --git https://github.com/AmonRayfa/wapi --branch dev
+cargo install --git https://github.com/AmonRayfa/wapi --branch v1
 ```
+
+To use the **nightly version** instead (tracking the latest commits on the `dev` branch), replace `v1` with `dev`.
 
 If you want to install `cargo`, you can do so by following the instructions on the [Rust website](https://www.rust-lang.org/tools/install/).
 
-You can now...
+You can now run `wapi --help` to explore the available commands.
 
 <h2><img height="20" alt="usage" src="./img/usage.svg">&nbsp;&nbsp;Usage</h2>
 
--> This section will be updated soon.
+A typical workflow looks like this:
 
-For further details on how to use the project, please refer to the [documentation](https://wapi.readthedocs.io).
+```sh
+wapi providers                                            # Lists the supported DNS service providers and their IDs.
+wapi token porkbun-main                                   # Creates a token (the provider ID and API keys are prompted).
+wapi track example.com www.example.com @porkbun-main      # Tracks hostnames by associating them with the token.
+wapi bind                                                 # Binds your current IP addresses to all the tracked hostnames.
+wapi bind --interval 300                                  # Keeps the DNS records up to date, checking every 5 minutes.
+```
+
+The `wapi bind` command compares your current public IP addresses with the cached ones, and only contacts the DNS service provider when a record is missing or outdated. Run `wapi --help` (or any command with `--help`) for the full list of commands and options, and refer to the [documentation](https://wapi.readthedocs.io) for further details.
 
 <h2><img height="20" alt="security" src="./img/security.svg">&nbsp;&nbsp;Security</h2>
+
+Your API keys are stored in the operating system's keychain (i.e., the macOS Keychain, the Windows Credential Manager, or the Linux secret service) and never touch the disk in plain text; the rest of the client's state lives in `~/.wapi/cache`, which is restricted to your user account.
 
 Vulnerabilities and sensitive information should not be reported via public GitHub issues. Please refer to the [Security Policy](SECURITY.md) for details on supported versions and instructions on how to responsibly disclose security concerns.
 

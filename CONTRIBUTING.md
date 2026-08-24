@@ -11,14 +11,18 @@ Here are the main directories and files in the project:
 ├── src/
 │   ├── api/
 │   │   ├── client/
-│   │   │   └── cache/
-│   │   └── mod.rs
+│   │   │   ├── cache/
+│   │   │   ├── providers/
+│   │   │   ├── keystore.rs
+│   │   │   └── mod.rs
+│   │   ├── mod.rs
+│   │   └── parser.rs
 │   └── main.rs
 ├── Cargo.toml
 └── package.json
 ```
 
-The `src/api/mod.rs` file defines the topology of the CLI. The `src/api/client/` directory defines the structs and methods to manipulate the CLI's client; it contains separate submodules for each DNS provider, housing the specific request logic for updating address records across different platforms. The `src/api/client/cache/` directory handles the client’s caching logic. The rest of the structure is self-explanatory.
+The `src/api/mod.rs` file defines the topology of the CLI, and the `src/api/parser.rs` file parses the interleaved hostname and token arguments of the track/untrack commands. The `src/api/client/` directory defines the structs and methods to manipulate the CLI's client: the `providers/` directory contains a submodule for each DNS service provider, housing the provider-specific request logic for retrieving and updating address records; the `cache/` directory handles the client's caching logic; and the `keystore.rs` file stores the API keys in the operating system's keychain. The rest of the structure is self-explanatory.
 
 Additionally, the `package.json` file configures the [Node](https://nodejs.org) environment required to run the [Trunk CLI](https://docs.trunk.io/code-quality/overview) metalinter.
 
@@ -86,7 +90,7 @@ npm run fmt --all                                   		# Formats all the files in
 
 ## Testing and Building the Project
 
-There are no tests for this project at the moment, but here are some generic test commands:
+The tests live next to the code they cover, in `#[cfg(test)]` modules. Here are some useful test commands:
 
 ```sh
 cargo test                                                  # Runs all the tests in the project.
