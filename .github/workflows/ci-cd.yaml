@@ -28,6 +28,12 @@ jobs:
       - name: Build for debugging
         run: cargo build --all-features --verbose
 
+      - name: Run the tests
+        run: cargo test --all-features --verbose
+
+      - name: Run the lints
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
       - name: Build for release
         run: cargo build --release --all-features --verbose
 
