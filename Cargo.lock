@@ -897,17 +897,17 @@ checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 [[package]]
 name = "mabe"
 version = "0.0.0"
-source = "git+https://github.com/AmonRayfa/mabe?branch=v1#336a46a438c221f776e2c42ebde53d58b3ca4918"
+source = "git+https://github.com/AmonRayfa/mabe?branch=v1#e8a290016fad30d890f101ea1785bb2277f9e8b9"
 dependencies = [
  "anyhow",
  "mabe_attr",
- "term_size",
+ "terminal_size",
 ]
 
 [[package]]
 name = "mabe_attr"
 version = "0.0.0"
-source = "git+https://github.com/AmonRayfa/mabe?branch=v1#336a46a438c221f776e2c42ebde53d58b3ca4918"
+source = "git+https://github.com/AmonRayfa/mabe?branch=v1#e8a290016fad30d890f101ea1785bb2277f9e8b9"
 dependencies = [
  "quote",
  "syn",
@@ -1642,13 +1642,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "term_size"
-version = "0.3.2"
+name = "terminal_size"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e4129646ca0ed8f45d09b929036bafad5377103edd06e50bf574b353d2b08d9"
+checksum = "230a1b821ccbd75b185820a1f1ff7b14d21da1e442e22c0863ea5f08771a8874"
 dependencies = [
- "libc",
- "winapi",
+ "rustix",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
